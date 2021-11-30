@@ -117,7 +117,7 @@ func TestBBS_HTML(t *testing.T) {
 	}
 }
 
-func Test_IsCelerity(t *testing.T) {
+func Test_HasCelerity(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -135,8 +135,8 @@ func Test_IsCelerity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsCelerity(tt.args.b); got != tt.want {
-				t.Errorf("IsCelerity() = %v, want %v", got, tt.want)
+			if got := bbs.HasCelerity(tt.args.b); got != tt.want {
+				t.Errorf("HasCelerity() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -159,14 +159,14 @@ func Test_findRenegade(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsRenegade(tt.args.b); got != tt.want {
-				t.Errorf("IsRenegade() = %v, want %v", got, tt.want)
+			if got := bbs.HasRenegade(tt.args.b); got != tt.want {
+				t.Errorf("HasRenegade() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_IsPCBoard(t *testing.T) {
+func Test_HasPCBoard(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -186,14 +186,14 @@ func Test_IsPCBoard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsPCBoard(tt.args.b); got != tt.want {
-				t.Errorf("IsPCBoard() = %v, want %v", got, tt.want)
+			if got := bbs.HasPCBoard(tt.args.b); got != tt.want {
+				t.Errorf("HasPCBoard() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_IsWildcat(t *testing.T) {
+func Test_HasWildcat(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -212,14 +212,14 @@ func Test_IsWildcat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsWildcat(tt.args.b); got != tt.want {
-				t.Errorf("IsWildcat() = %v, want %v", got, tt.want)
+			if got := bbs.HasWildcat(tt.args.b); got != tt.want {
+				t.Errorf("HasWildcat() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_IsWHeart(t *testing.T) {
+func Test_HasWHeart(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -237,14 +237,14 @@ func Test_IsWHeart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsWHeart(tt.args.b); got != tt.want {
-				t.Errorf("IsWHeart() = %v, want %v", got, tt.want)
+			if got := bbs.HasWHeart(tt.args.b); got != tt.want {
+				t.Errorf("HasWHeart() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_IsWHash(t *testing.T) {
+func Test_HasWHash(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -264,8 +264,8 @@ func Test_IsWHash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.IsWHash(tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("IsWHash() = %v, want %v", got, tt.want)
+			if got := bbs.HasWHash(tt.args.b); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("HasWHash() = %v, want %v", got, tt.want)
 			}
 		})
 	}

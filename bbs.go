@@ -200,9 +200,9 @@ func HTMLWHeart(dst *bytes.Buffer, src string) error {
 	return split.HTMLBars(dst, x)
 }
 
-// IsCelerity reports if the bytes contains Celerity BBS color codes.
+// HasCelerity reports if the bytes contains Celerity BBS color codes.
 // The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
-func IsCelerity(b []byte) bool {
+func HasCelerity(b []byte) bool {
 	// celerityCodes contains all the character sequences for Celerity.
 	for _, code := range []byte(celerityCodes) {
 		if bytes.Contains(b, []byte{Celerity.Bytes()[0], code}) {
@@ -212,9 +212,9 @@ func IsCelerity(b []byte) bool {
 	return false
 }
 
-// IsPCBoard reports if the bytes contains PCBoard BBS color codes.
+// HasPCBoard reports if the bytes contains PCBoard BBS color codes.
 // The format uses an "@X" prefix with a background and foreground, 4-bit hexadecimal color value.
-func IsPCBoard(b []byte) bool {
+func HasPCBoard(b []byte) bool {
 	const first, last = 0, 15
 	const hexxed = "%X%X"
 	for bg := first; bg <= last; bg++ {
@@ -229,9 +229,9 @@ func IsPCBoard(b []byte) bool {
 	return false
 }
 
-// IsRenegade reports if the bytes contains Renegade BBS color codes.
+// HasRenegade reports if the bytes contains Renegade BBS color codes.
 // The format uses the vertical bar "|" followed by a padded, numeric value between 00 and 23.
-func IsRenegade(b []byte) bool {
+func HasRenegade(b []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
@@ -244,9 +244,9 @@ func IsRenegade(b []byte) bool {
 	return false
 }
 
-// IsTelegard reports if the bytes contains Telegard BBS color codes.
+// HasTelegard reports if the bytes contains Telegard BBS color codes.
 // The format uses the vertical bar "|" followed by a padded, numeric value between 00 and 23.
-func IsTelegard(b []byte) bool {
+func HasTelegard(b []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
@@ -259,10 +259,10 @@ func IsTelegard(b []byte) bool {
 	return false
 }
 
-// IsWildcat reports if the bytes contains Wildcat! BBS color codes.
+// HasWildcat reports if the bytes contains Wildcat! BBS color codes.
 // The format uses an a background and foreground,
 // 4-bit hexadecimal color value enclosed by two at "@" characters.
-func IsWildcat(b []byte) bool {
+func HasWildcat(b []byte) bool {
 	const first, last = 0, 15
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
@@ -276,10 +276,10 @@ func IsWildcat(b []byte) bool {
 	return false
 }
 
-// IsWHash reports if the bytes contains WWIV BBS # (hash or pound) color codes.
+// HasWHash reports if the bytes contains WWIV BBS # (hash or pound) color codes.
 // The format uses a vertical bar "|" with the hash "#" characters
 // as a prefix with a numeric value between 0 and 9.
-func IsWHash(b []byte) bool {
+func HasWHash(b []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
@@ -290,11 +290,11 @@ func IsWHash(b []byte) bool {
 	return false
 }
 
-// IsWHeart reports if the bytes contains WWIV BBS ♥ (heart) color codes.
+// HasWHeart reports if the bytes contains WWIV BBS ♥ (heart) color codes.
 // The format uses the ETX character as a prefix with a numeric value between 0 and 9.
 // In the standard MS-DOS, USA codepage (CP-437), the ETX (end-of-text)
 // character is substituted with a heart character.
-func IsWHeart(b []byte) bool {
+func HasWHeart(b []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
@@ -351,22 +351,22 @@ func Find(src io.Reader) BBS {
 		case bytes.Contains(b, ANSI.Bytes()):
 			return ANSI
 		case bytes.Contains(b, Celerity.Bytes()):
-			if IsRenegade(b) {
+			if HasRenegade(b) {
 				return Renegade
 			}
-			if IsCelerity(b) {
+			if HasCelerity(b) {
 				return Celerity
 			}
 			return -1
-		case IsPCBoard(b):
+		case HasPCBoard(b):
 			return PCBoard
-		case IsTelegard(b):
+		case HasTelegard(b):
 			return Telegard
-		case IsWildcat(b):
+		case HasWildcat(b):
 			return Wildcat
-		case IsWHash(b):
+		case HasWHash(b):
 			return WWIVHash
-		case IsWHeart(b):
+		case HasWHeart(b):
 			return WWIVHeart
 		}
 	}

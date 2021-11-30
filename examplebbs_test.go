@@ -50,44 +50,44 @@ func ExampleHTMLPCBoard() {
 	// Output: <i class="PB0 PF3">Hello world</i>
 }
 
-func ExampleIsCelerity() {
+func ExampleHasCelerity() {
 	b := []byte("|cHello |C|S|wworld")
-	fmt.Printf("Is b Celerity BBS text? %v", bbs.IsCelerity(b))
-	// Output: Is b Celerity BBS text? true
+	fmt.Printf("Has b Celerity BBS text? %v", bbs.HasCelerity(b))
+	// Output: Has b Celerity BBS text? true
 }
 
-func ExampleIsPCBoard() {
+func ExampleHasPCBoard() {
 	b := []byte("@X03Hello world")
-	fmt.Printf("Is b PCBoard BBS text? %v", bbs.IsPCBoard(b))
-	// Output: Is b PCBoard BBS text? true
+	fmt.Printf("Has b PCBoard BBS text? %v", bbs.HasPCBoard(b))
+	// Output: Has b PCBoard BBS text? true
 }
 
-func ExampleIsRenegade() {
+func ExampleHasRenegade() {
 	b := []byte("|03Hello |07|19world")
-	fmt.Printf("Is b Renegade BBS text? %v", bbs.IsRenegade(b))
-	// Output: Is b Renegade BBS text? true
+	fmt.Printf("Has b Renegade BBS text? %v", bbs.HasRenegade(b))
+	// Output: Has b Renegade BBS text? true
 }
 
-func ExampleIsTelegard() {
+func ExampleHasTelegard() {
 	b := []byte("`07Hello world")
-	fmt.Printf("Is b Telegard BBS text? %v", bbs.IsTelegard(b))
-	// Output: Is b Telegard BBS text? true
+	fmt.Printf("Has b Telegard BBS text? %v", bbs.HasTelegard(b))
+	// Output: Has b Telegard BBS text? true
 }
 
-func ExampleIsWHash() {
+func ExampleHasWHash() {
 	b := []byte("|#7Hello world")
-	fmt.Printf("Is b WVIV BBS # text? %v", bbs.IsWHash(b))
-	// Output: Is b WVIV BBS # text? true
+	fmt.Printf("Has b WVIV BBS # text? %v", bbs.HasWHash(b))
+	// Output: Has b WVIV BBS # text? true
 }
-func ExampleIsWHeart() {
+func ExampleHasWHeart() {
 	b := []byte("\x037Hello world")
-	fmt.Printf("Is b WWIV BBS ♥ text? %v", bbs.IsWHeart(b))
-	// Output: Is b WWIV BBS ♥ text? true
+	fmt.Printf("Has b WWIV BBS ♥ text? %v", bbs.HasWHeart(b))
+	// Output: Has b WWIV BBS ♥ text? true
 }
-func ExampleIsWildcat() {
+func ExampleHasWildcat() {
 	b := []byte("@0F@Hello world")
-	fmt.Printf("Is b Wildcat! BBS text? %v", bbs.IsWildcat(b))
-	// Output: Is b Wildcat! BBS text? true
+	fmt.Printf("Has b Wildcat! BBS text? %v", bbs.HasWildcat(b))
+	// Output: Has b Wildcat! BBS text? true
 }
 
 func ExampleFind() {
