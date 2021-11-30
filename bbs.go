@@ -92,11 +92,11 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"html/template"
 	"io"
 	"regexp"
 	"strconv"
-	"strings"
+
+	"github.com/bengarrett/bbs/internal/split"
 )
 
 var (
@@ -121,20 +121,6 @@ const (
 	WWIVHash             // WWIV BBS # codes.
 	WWIVHeart            // WWIV BBS ♥ codes.
 )
-
-// colorInt template data for integer based color codes.
-type colorInt struct {
-	Background int
-	Foreground int
-	Content    string
-}
-
-// colorStr template data for string based color codes.
-type colorStr struct {
-	Background string
-	Foreground string
-	Content    string
-}
 
 const (
 	// ClearCmd is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
@@ -164,213 +150,22 @@ const (
 	celerityCodes = "kbgcrmywdBGCRMYWS"
 )
 
-// FieldsBars slices a string into substrings separated by "|" vertical bar codes.
-// The first two bytes of each substring will contain a colour value.
-// Vertical bar codes are used by Renegade, WWIV hash and WWIV heart formats.
-// An empty slice is returned when no valid bar code values exists.
-func FieldsBars(src string) []string {
-	const sep rune = 65535
-	m := regexp.MustCompile(RenegadeMatch)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(src, repl)
-	if !strings.ContainsRune(res, sep) {
-		return nil
-	}
-
-	spl := strings.Split(res, string(sep))
-	app := []string{}
-	for _, val := range spl {
-		if val != "" {
-			app = append(app, val)
-		}
-	}
-	return app
-}
-
-// ParserBars parses the string for BBS color codes that use
-// vertical bar prefixes to apply a HTML template.
-func parserBars(dst *bytes.Buffer, src string) error {
-	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return err
-	}
-
-	d := colorInt{}
-	bars := FieldsBars(src)
-	if len(bars) == 0 {
-		_, err := dst.WriteString(src)
-		return err
-	}
-
-	for _, color := range bars {
-		n, err := strconv.Atoi(color[0:2])
-		if err != nil {
-			continue
-		}
-		if barForeground(n) {
-			d.Foreground = n
-		}
-		if barBackground(n) {
-			d.Background = n
-		}
-		d.Content = color[2:]
-		if err := tmpl.Execute(dst, d); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func barBackground(n int) bool {
-	if n < 16 {
-		return false
-	}
-	if n > 23 {
-		return false
-	}
-	return true
-}
-
-func barForeground(n int) bool {
-	if n < 0 {
-		return false
-	}
-	if n > 15 {
-		return false
-	}
-	return true
-}
-
-// FieldsCelerity slices a string into substrings separated by "|" vertical bar codes.
-// The first byte of each substring will contain a Celerity colour value,
-// that are comprised of a single, alphabetic character.
-// An empty slice is returned when no valid Celerity code values exists.
-func FieldsCelerity(src string) []string {
-	// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
-	const sep rune = 65535
-	m := regexp.MustCompile(CelerityMatch)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(src, repl)
-	if !strings.ContainsRune(res, sep) {
-		return []string{}
-	}
-
-	spl := strings.Split(res, string(sep))
-	clean := []string{}
-	for _, val := range spl {
-		if val != "" {
-			clean = append(clean, val)
-		}
-	}
-	return clean
-}
-
-// ParserCelerity parses the string for the unique Celerity BBS color codes
-// to apply a HTML template.
-func parserCelerity(dst *bytes.Buffer, src string) error {
-	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return err
-	}
-
-	//buf, background := bytes.Buffer{}, false
-	background := false
-	d := colorStr{
-		Foreground: "w",
-		Background: "k",
-	}
-
-	bars := FieldsCelerity(src)
-	if len(bars) == 0 {
-		_, err := dst.WriteString(src)
-		return err
-	}
-	for _, color := range bars {
-		if color == swapCmd {
-			background = !background
-			continue
-		}
-		if !background {
-			d.Foreground = string(color[0])
-		}
-		if background {
-			d.Background = string(color[0])
-		}
-		d.Content = color[1:]
-		if err := tmpl.Execute(dst, d); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// FieldsPCBoard slices a string into substrings separated by PCBoard @X codes.
-// The first two bytes of each substring will contain background
-// and foreground hex colour values.
-// An empty slice is returned when no valid @X code values exists.
-func FieldsPCBoard(s string) []string {
-	const sep rune = 65535
-	m := regexp.MustCompile(PCBoardMatch)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(s, repl)
-	if !strings.ContainsRune(res, sep) {
-		return []string{}
-	}
-
-	spl := strings.Split(res, string(sep))
-	clean := []string{}
-	for _, val := range spl {
-		if val != "" {
-			clean = append(clean, val)
-		}
-	}
-	return clean
-}
-
-// parserPCBoard parses the string for the common PCBoard BBS color codes
-// to apply a HTML template.
-func parserPCBoard(dst *bytes.Buffer, src string) error {
-	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return err
-	}
-
-	d := colorStr{}
-	xcodes := FieldsPCBoard(src)
-	if len(xcodes) == 0 {
-		_, err := dst.WriteString(src)
-		return err
-	}
-	for _, color := range xcodes {
-		d.Background = strings.ToUpper(string(color[0]))
-		d.Foreground = strings.ToUpper(string(color[1]))
-		d.Content = color[2:]
-		if err := tmpl.Execute(dst, d); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // HTMLCelerity writes to dst the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
 func HTMLCelerity(dst *bytes.Buffer, src string) error {
-	return parserCelerity(dst, src)
+	return split.HTMLCelerity(dst, src)
 }
 
 // HTMLRenegade writes to dst the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
 func HTMLRenegade(dst *bytes.Buffer, src string) error {
-	return parserBars(dst, src)
+	return split.HTMLBars(dst, src)
 }
 
 // HTMLPCBoard writes to dst the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func HTMLPCBoard(dst *bytes.Buffer, src string) error {
-	return parserPCBoard(dst, src)
+	return split.HTMLPCBoard(dst, src)
 }
 
 // HTMLTelegard writes to dst the HTML equivalent of Telegard BBS color codes with
@@ -378,7 +173,7 @@ func HTMLPCBoard(dst *bytes.Buffer, src string) error {
 func HTMLTelegard(dst *bytes.Buffer, src string) error {
 	r := regexp.MustCompile(TelegardMatch)
 	x := r.ReplaceAllString(src, `@X$1$2`)
-	return parserPCBoard(dst, x)
+	return split.HTMLPCBoard(dst, x)
 }
 
 // HTMLWildcat writes to dst the HTML equivalent of Wildcat! BBS color codes with
@@ -386,7 +181,7 @@ func HTMLTelegard(dst *bytes.Buffer, src string) error {
 func HTMLWildcat(dst *bytes.Buffer, src string) error {
 	r := regexp.MustCompile(WildcatMatch)
 	x := r.ReplaceAllString(src, `@X$1$2`)
-	return parserPCBoard(dst, x)
+	return split.HTMLPCBoard(dst, x)
 }
 
 // HTMLWildcat writes to dst the HTML equivalent of WWIV BBS # color codes with
@@ -394,7 +189,7 @@ func HTMLWildcat(dst *bytes.Buffer, src string) error {
 func HTMLWHash(dst *bytes.Buffer, src string) error {
 	r := regexp.MustCompile(WWIVHashMatch)
 	x := r.ReplaceAllString(src, `|0$1`)
-	return parserBars(dst, x)
+	return split.HTMLBars(dst, x)
 }
 
 // HTMLWildcat writes to dst the HTML equivalent of WWIV BBS ♥ color codes with
@@ -402,7 +197,7 @@ func HTMLWHash(dst *bytes.Buffer, src string) error {
 func HTMLWHeart(dst *bytes.Buffer, src string) error {
 	r := regexp.MustCompile(WWIVHeartMatch)
 	x := r.ReplaceAllString(src, `|0$1`)
-	return parserBars(dst, x)
+	return split.HTMLBars(dst, x)
 }
 
 // IsCelerity reports if the bytes contains Celerity BBS color codes.
@@ -527,11 +322,11 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	case ANSI:
 		return nil, -1, ErrANSI
 	case Celerity:
-		return FieldsCelerity(string(b)), f, nil
+		return split.Celerity(string(b)), f, nil
 	case PCBoard, Telegard, Wildcat:
-		return FieldsPCBoard(string(b)), f, nil
+		return split.PCBoard(string(b)), f, nil
 	case Renegade, WWIVHash, WWIVHeart:
-		return FieldsBars(string(b)), f, nil
+		return split.Bars(string(b)), f, nil
 	}
 	return nil, -1, ErrColorCodes
 }

@@ -2,7 +2,6 @@ package bbs_test
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -272,32 +271,6 @@ func Test_IsWHash(t *testing.T) {
 	}
 }
 
-func Test_FieldsBars(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{"empty", args{""}, 0},
-		{"first", args{"|00"}, 1},
-		{"last", args{"|23"}, 1},
-		{"out of range", args{"|24"}, 0},
-		{"incomplete", args{"|2"}, 0},
-		{"multiples", args{"|01Hello|00 |10world"}, 2},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := len(bbs.FieldsBars(tt.args.s)); got != tt.want {
-				fmt.Println(bbs.FieldsBars(tt.args.s))
-				t.Errorf("FieldsBars() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_HTMLRenegade(t *testing.T) {
 	type args struct {
 		s string
@@ -366,32 +339,6 @@ func Test_HTMLCelerity(t *testing.T) {
 			}
 			if got.String() != tt.want {
 				t.Errorf("HTMLCelerity() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_FieldsPCBoard(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name string
-		args args
-		want int
-	}{
-		{"empty", args{""}, 0},
-		{"first", args{"@X00"}, 1},
-		{"last", args{"@XFF"}, 1},
-		{"out of range", args{"@XFG"}, 0},
-		{"incomplete", args{"@X0"}, 0},
-		{"multiples", args{"@X01Hello@X00 @X10world"}, 3},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := len(bbs.FieldsPCBoard(tt.args.s)); got != tt.want {
-				fmt.Println(bbs.FieldsPCBoard(tt.args.s))
-				t.Errorf("FieldsPCBoard() = %v, want %v", got, tt.want)
 			}
 		})
 	}

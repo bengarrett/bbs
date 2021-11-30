@@ -10,27 +10,6 @@ import (
 	"github.com/bengarrett/bbs"
 )
 
-func ExampleFieldsBars() {
-	s := "|03Hello |07|19world"
-	l := len(bbs.FieldsBars(s))
-	fmt.Printf("Color sequences: %d", l)
-	// Output: Color sequences: 3
-}
-
-func ExampleFieldsCelerity() {
-	s := "|cHello |C|S|wworld"
-	l := len(bbs.FieldsCelerity(s))
-	fmt.Printf("Color sequences: %d", l)
-	// Output: Color sequences: 4
-}
-
-func ExampleFieldsPCBoard() {
-	s := "@X03Hello world"
-	l := len(bbs.FieldsPCBoard(s))
-	fmt.Printf("Color sequences: %d", l)
-	// Output: Color sequences: 1
-}
-
 func ExampleHTML() {
 	var out bytes.Buffer
 	src := strings.NewReader("@X03Hello world")
