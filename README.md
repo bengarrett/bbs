@@ -1,6 +1,6 @@
 # Package bbs
 
-Package bbs is a [Go module]() that interacts with legacy textfiles encoded with
+Package bbs is a [Go module](https://go.dev/) that interacts with legacy textfiles encoded with
 [Bulletin Board Systems]() (BBS) color codes to reconstruct them into HTML documents.
 
 BBSes were popular in the 1980s and 1990s, and allowed computer users to chat,
@@ -10,7 +10,7 @@ and ease of access to the Internet eventually replaced BBSes, as did the world-w
 These centralized systems, termed boards, used a text-based interface, and their
 owners often applied colorization, text themes, and art to differentiate themselves.
 
-While in the 1990s, [ANSI control codes]() were in everyday use on the [PC/MS-DOS](), the
+While in the 1990s, [ANSI control codes](https://en.wikipedia.org/wiki/ANSI_escape_code) were in everyday use on the [PC/MS-DOS](https://en.wikipedia.org/wiki/MS-DOS), the
 standard comes from mainframe equipment. Home microcomputers often had difficulty
 interpreting it. So BBS developers created their own, more straightforward methods
 to colorize and theme the text output to solve this.
@@ -24,7 +24,7 @@ this library does not support the standard.
 
 ```go
 // open a text file
-file, err := os.Open("textfile.pcb")
+file, err := os.Open("pcboard.txt")
 if err != nil {
     log.Fatal(err)
 }
