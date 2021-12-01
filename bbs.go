@@ -1,30 +1,3 @@
-// internal header
-// https://go.dev/blog/examples
-// https://pkg.go.dev/github.com/fluhus/godoc-tricks#section-documentation
-// http://wiki.synchro.net/custom:colors
-//
-// future funcs
-// BBS.ReplaceAll || BBS.Remove || BBS.Discard
-// Marshal(interface) => []byte
-// Encode(dst, src []byte)
-// EncodeToString(src []byte) string
-//
-// HTMLEscape(dst *bytes.Buffer, src []byte)
-// func main() {
-// var out bytes.Buffer
-// json.HTMLEscape(&out, []byte(`{"Name":"<b>HTML content</b>"}`))
-// out.WriteTo(os.Stdout)
-// }
-// dst.Write() // dst.WriteByte // dst.WriteString()
-//
-// func Valid(data []byte) bool
-// Valid reports whether data is a valid JSON encoding.
-//
-// html.HTML type html.CSS type
-//
-// strings.Builder type = A Builder is used to efficiently build a string using Write methods. It minimizes memory copying. The zero value is ready to use. Do not copy a non-zero Builder.
-// https://pkg.go.dev/strings@go1.17.3#Builder
-
 // Package bbs interacts with legacy textfiles encoded with
 // Bulletin Board Systems (BBS) color codes to reconstruct them into HTML documents.
 //
