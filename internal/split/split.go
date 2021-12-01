@@ -38,28 +38,29 @@ const (
 // The first two bytes of each substring will contain a colour value.
 // Vertical bar codes are used by Renegade, WWIV hash and WWIV heart formats.
 // An empty slice is returned when no valid bar code values exists.
-func Bars(src string) []string {
+func Bars(src []byte) []string {
 	const sep rune = 65535
 	m := regexp.MustCompile(BarsMatch)
 	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(src, repl)
-	if !strings.ContainsRune(res, sep) {
+	res := m.ReplaceAll(src, []byte(repl))
+	if !bytes.ContainsRune(res, sep) {
 		return nil
 	}
 
-	spl := strings.Split(res, string(sep))
+	spl := bytes.Split(res, []byte(string(sep)))
 	app := []string{}
 	for _, val := range spl {
-		if val != "" {
-			app = append(app, val)
+		if len(val) == 0 {
+			continue
 		}
+		app = append(app, string(val))
 	}
 	return app
 }
 
 // HTMLBars parses the string for BBS color codes that use
 // vertical bar prefixes to apply a HTML template.
-func HTMLBars(dst *bytes.Buffer, src string) error {
+func HTMLBars(dst *bytes.Buffer, src []byte) error {
 	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
@@ -69,7 +70,7 @@ func HTMLBars(dst *bytes.Buffer, src string) error {
 	d := colorInt{}
 	bars := Bars(src)
 	if len(bars) == 0 {
-		_, err := dst.WriteString(src)
+		_, err := dst.Write(src)
 		return err
 	}
 
@@ -116,36 +117,36 @@ func barForeground(n int) bool {
 // The first byte of each substring will contain a Celerity colour value,
 // that are comprised of a single, alphabetic character.
 // An empty slice is returned when no valid Celerity code values exists.
-func Celerity(src string) []string {
+func Celerity(src []byte) []string {
 	// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
 	const sep rune = 65535
 	m := regexp.MustCompile(CelerityMatch)
 	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(src, repl)
-	if !strings.ContainsRune(res, sep) {
+	res := m.ReplaceAll(src, []byte(repl))
+	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
 
-	spl := strings.Split(res, string(sep))
+	spl := bytes.Split(res, []byte(string(sep)))
 	clean := []string{}
 	for _, val := range spl {
-		if val != "" {
-			clean = append(clean, val)
+		if len(val) == 0 {
+			continue
 		}
+		clean = append(clean, string(val))
 	}
 	return clean
 }
 
 // HTMLCelerity parses the string for the unique Celerity BBS color codes
 // to apply a HTML template.
-func HTMLCelerity(dst *bytes.Buffer, src string) error {
+func HTMLCelerity(dst *bytes.Buffer, src []byte) error {
 	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
 		return err
 	}
 
-	//buf, background := bytes.Buffer{}, false
 	background := false
 	d := colorStr{
 		Foreground: "w",
@@ -154,7 +155,7 @@ func HTMLCelerity(dst *bytes.Buffer, src string) error {
 
 	bars := Celerity(src)
 	if len(bars) == 0 {
-		_, err := dst.WriteString(src)
+		_, err := dst.Write(src)
 		return err
 	}
 	for _, color := range bars {
@@ -180,28 +181,29 @@ func HTMLCelerity(dst *bytes.Buffer, src string) error {
 // The first two bytes of each substring will contain background
 // and foreground hex colour values.
 // An empty slice is returned when no valid @X code values exists.
-func PCBoard(s string) []string {
+func PCBoard(src []byte) []string {
 	const sep rune = 65535
 	m := regexp.MustCompile(PCBoardMatch)
 	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAllString(s, repl)
-	if !strings.ContainsRune(res, sep) {
+	res := m.ReplaceAll(src, []byte(repl))
+	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
 
-	spl := strings.Split(res, string(sep))
+	spl := bytes.Split(res, []byte(string(sep)))
 	clean := []string{}
 	for _, val := range spl {
-		if val != "" {
-			clean = append(clean, val)
+		if len(val) == 0 {
+			continue
 		}
+		clean = append(clean, string(val))
 	}
 	return clean
 }
 
 // HTMLPCBoard parses the string for the common PCBoard BBS color codes
 // to apply a HTML template.
-func HTMLPCBoard(dst *bytes.Buffer, src string) error {
+func HTMLPCBoard(dst *bytes.Buffer, src []byte) error {
 	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
@@ -211,7 +213,7 @@ func HTMLPCBoard(dst *bytes.Buffer, src string) error {
 	d := colorStr{}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
-		_, err := dst.WriteString(src)
+		_, err := dst.Write(src)
 		return err
 	}
 	for _, color := range xcodes {

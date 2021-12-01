@@ -22,7 +22,7 @@ func ExampleHTML() {
 
 func ExampleHTMLRenegade() {
 	var out bytes.Buffer
-	src := "|03Hello |07|19world"
+	src := []byte("|03Hello |07|19world")
 	if err := bbs.HTMLRenegade(&out, src); err != nil {
 		log.Print(err)
 	}
@@ -32,7 +32,7 @@ func ExampleHTMLRenegade() {
 
 func ExampleHTMLCelerity() {
 	var out bytes.Buffer
-	src := "|cHello |C|S|wworld"
+	src := []byte("|cHello |C|S|wworld")
 	if err := bbs.HTMLCelerity(&out, src); err != nil {
 		fmt.Print(err)
 	}
@@ -42,7 +42,7 @@ func ExampleHTMLCelerity() {
 
 func ExampleHTMLPCBoard() {
 	var out bytes.Buffer
-	src := "@X03Hello world"
+	src := []byte("@X03Hello world")
 	if err := bbs.HTMLPCBoard(&out, src); err != nil {
 		log.Print(err)
 	}

@@ -295,50 +295,13 @@ func Test_HTMLRenegade(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLRenegade(&got, tt.args.s)
+			err := bbs.HTMLRenegade(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTMLRenegade() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
 				t.Errorf("HTMLRenegade() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_HTMLCelerity(t *testing.T) {
-	type args struct {
-		s string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{"empty", args{}, "", false},
-		{"string", args{"the quick brown fox"}, "the quick brown fox", false},
-		{"prefix", args{"|kHello world"}, "<i class=\"PBk PFk\">Hello world</i>", false},
-		{"background", args{"|S|bHello world"},
-			"<i class=\"PBb PFw\">Hello world</i>", false},
-		{"multi", args{"|S|gHello|Rworld"},
-			"<i class=\"PBg PFw\">Hello</i><i class=\"PBR PFw\">world</i>", false},
-		{"newline", args{"|S|gHello\n|Rworld"},
-			"<i class=\"PBg PFw\">Hello\n</i><i class=\"PBR PFw\">world</i>", false},
-		{"false positive", args{"| Hello world |"}, "| Hello world |", false},
-		{"double bar", args{"||pipes"}, "||pipes", false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := bytes.Buffer{}
-			err := bbs.HTMLCelerity(&got, tt.args.s)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLCelerity() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got.String() != tt.want {
-				t.Errorf("HTMLCelerity() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -370,7 +333,7 @@ func Test_HTMLPCBoard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLPCBoard(&got, tt.args.s)
+			err := bbs.HTMLPCBoard(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTMLPCBoard() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -399,7 +362,7 @@ func Test_HTMLTelegard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLTelegard(&got, tt.args.s)
+			err := bbs.HTMLTelegard(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTMLTelegard() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -428,7 +391,7 @@ func Test_HTMLWHash(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLWHash(&got, tt.args.s)
+			err := bbs.HTMLWHash(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTMLWHash() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -457,7 +420,7 @@ func Test_HTMLWHeart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLWHeart(&got, tt.args.s)
+			err := bbs.HTMLWHeart(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HTMLWHeart() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -485,7 +448,7 @@ func Test_HTMLWildcat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := bytes.Buffer{}
-		err := bbs.HTMLWildcat(&got, tt.args.s)
+		err := bbs.HTMLWildcat(&got, []byte(tt.args.s))
 		if (err != nil) != tt.wantErr {
 			t.Errorf("HTMLWildcat() error = %v, wantErr %v", err, tt.wantErr)
 			return
@@ -529,6 +492,30 @@ func TestBBS_Remove(t *testing.T) {
 			}
 			if got.String() != tt.want {
 				t.Errorf("BBS.Remove() dst = %q, want %q", got.String(), tt.want)
+			}
+		})
+	}
+}
+
+func TestTrimControls(t *testing.T) {
+	type args struct {
+		b []byte
+	}
+	tests := []struct {
+		name string
+		args args
+		want []byte
+	}{
+		{"empty", args{[]byte("")}, nil},
+		{"none", args{[]byte("Hello world.")}, []byte("Hello world.")},
+		{"clear", args{[]byte("@CLS@Hello world.")}, []byte("Hello world.")},
+		{"pause", args{[]byte("@PAUSE@Hello world.")}, []byte("Hello world.")},
+		{"both", args{[]byte("@CLS@@PAUSE@Hello world.")}, []byte("Hello world.")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := bbs.TrimControls(tt.args.b); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("TrimControls() = %v, want %v", got, tt.want)
 			}
 		})
 	}
