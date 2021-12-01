@@ -23,7 +23,7 @@ this library does not support the standard.
 [Go Package with docs and examples.](https://pkg.go.dev/github.com/bengarrett/bbs)
 
 ```go
-// open text file
+// open a text file
 file, err := os.Open("textfile.pcb")
 if err != nil {
     log.Fatal(err)
@@ -79,7 +79,7 @@ A PC/MS-DOS application became famous due to a source code leak or release by
 one of its authors back in an era when most developers were still highly
 secretive with their code. The source is incorporated into several other projects.
 
-### WVIV
+### WWIV
 
 A mainstay in the PC/MS-DOS BBS scene of the 1980s and early 1990s, it became well
 known for releasing its source code to registered users. It allowed them to expand
