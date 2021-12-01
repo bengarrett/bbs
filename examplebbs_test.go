@@ -182,6 +182,6 @@ func ExampleBBS_String() {
 func ExampleBBS_Valid() {
 	r := strings.NewReader("Hello world")
 	f := bbs.Find(r)
-	fmt.Print("reader is plain text? ", f.Valid())
-	// Output: reader is plain text? false
+	fmt.Print("reader is BBS text? ", f.Valid())
+	// Output: reader is BBS text? false
 }
