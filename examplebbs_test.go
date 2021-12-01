@@ -69,7 +69,8 @@ func ExampleHasRenegade() {
 }
 
 func ExampleHasTelegard() {
-	b := []byte("`07Hello world")
+	const grave = "\u0060" // godoc treats a grave character as a special control
+	b := []byte(grave + "7Hello world")
 	fmt.Printf("Has b Telegard BBS text? %v", bbs.HasTelegard(b))
 	// Output: Has b Telegard BBS text? true
 }
@@ -88,6 +89,13 @@ func ExampleHasWildcat() {
 	b := []byte("@0F@Hello world")
 	fmt.Printf("Has b Wildcat! BBS text? %v", bbs.HasWildcat(b))
 	// Output: Has b Wildcat! BBS text? true
+}
+
+func ExampleTrimControls() {
+	b := []byte("@CLS@@PAUSE@Hello world")
+	r := bbs.TrimControls(b)
+	fmt.Print(string(r))
+	// Output: Hello world
 }
 
 func ExampleFind() {

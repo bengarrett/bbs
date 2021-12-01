@@ -245,7 +245,7 @@ func HasRenegade(src []byte) bool {
 }
 
 // HasTelegard reports if the bytes contains Telegard BBS color codes.
-// The format uses the vertical bar "|" followed by a padded, numeric value between 00 and 23.
+// The format uses the grave accent followed by a padded, numeric value between 00 and 23.
 func HasTelegard(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
