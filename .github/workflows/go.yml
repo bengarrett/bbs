@@ -1,18 +1,13 @@
 name: Go
 
 on:
-  push:
+  create:
     branches: [ main ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      home:
-        description: 'location'
-        required: false
-        default: 'The Octoverse'
+  
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
