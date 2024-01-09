@@ -6,9 +6,9 @@ import (
 	"github.com/bengarrett/bbs/internal/split"
 )
 
-func ExampleBars() {
+func ExampleVBars() {
 	b := []byte("|03Hello |07|19world")
-	l := len(split.Bars(b))
+	l := len(split.VBars(b))
 	fmt.Printf("Color sequences: %d", l)
 	// Output: Color sequences: 3
 }

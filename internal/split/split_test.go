@@ -8,7 +8,7 @@ import (
 	"github.com/bengarrett/bbs/internal/split"
 )
 
-func Test_Bars(t *testing.T) {
+func Test_VBars(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -26,9 +26,9 @@ func Test_Bars(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := len(split.Bars([]byte(tt.args.s))); got != tt.want {
-				fmt.Println(split.Bars([]byte(tt.args.s)))
-				t.Errorf("Bars() = %v, want %v", got, tt.want)
+			if got := len(split.VBars([]byte(tt.args.s))); got != tt.want {
+				fmt.Println(split.VBars([]byte(tt.args.s)))
+				t.Errorf("VBars() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -87,7 +87,7 @@ func Test_PCBoard(t *testing.T) {
 	}
 }
 
-func Test_HTMLCelerity(t *testing.T) {
+func Test_CelerityHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -121,13 +121,13 @@ func Test_HTMLCelerity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := split.HTMLCelerity(&got, []byte(tt.args.s))
+			err := split.CelerityHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLCelerity() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CelerityHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLCelerity() = %v, want %v", got, tt.want)
+				t.Errorf("CelerityHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}

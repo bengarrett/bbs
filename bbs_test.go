@@ -123,7 +123,7 @@ func TestBBS_HTML(t *testing.T) {
 	}
 }
 
-func Test_HasCelerity(t *testing.T) {
+func Test_IsCelerity(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -141,8 +141,8 @@ func Test_HasCelerity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasCelerity(tt.args.b); got != tt.want {
-				t.Errorf("HasCelerity() = %v, want %v", got, tt.want)
+			if got := bbs.IsCelerity(tt.args.b); got != tt.want {
+				t.Errorf("IsCelerity() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -165,14 +165,14 @@ func Test_findRenegade(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasRenegade(tt.args.b); got != tt.want {
-				t.Errorf("HasRenegade() = %v, want %v", got, tt.want)
+			if got := bbs.IsRenegade(tt.args.b); got != tt.want {
+				t.Errorf("IsRenegade() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HasPCBoard(t *testing.T) {
+func Test_IsPCBoard(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -192,14 +192,14 @@ func Test_HasPCBoard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasPCBoard(tt.args.b); got != tt.want {
-				t.Errorf("HasPCBoard() = %v, want %v", got, tt.want)
+			if got := bbs.IsPCBoard(tt.args.b); got != tt.want {
+				t.Errorf("IsPCBoard() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HasWildcat(t *testing.T) {
+func Test_IsWildcat(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -218,14 +218,14 @@ func Test_HasWildcat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasWildcat(tt.args.b); got != tt.want {
-				t.Errorf("HasWildcat() = %v, want %v", got, tt.want)
+			if got := bbs.IsWildcat(tt.args.b); got != tt.want {
+				t.Errorf("IsWildcat() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HasWHeart(t *testing.T) {
+func Test_IsWWIVHeart(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -243,14 +243,14 @@ func Test_HasWHeart(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasWHeart(tt.args.b); got != tt.want {
-				t.Errorf("HasWHeart() = %v, want %v", got, tt.want)
+			if got := bbs.IsWWIVHeart(tt.args.b); got != tt.want {
+				t.Errorf("IsWWIVHeart() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HasWHash(t *testing.T) {
+func Test_IsWWIVHash(t *testing.T) {
 	type args struct {
 		b []byte
 	}
@@ -270,14 +270,14 @@ func Test_HasWHash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.HasWHash(tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("HasWHash() = %v, want %v", got, tt.want)
+			if got := bbs.IsWWIVHash(tt.args.b); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("IsWWIVHash() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLRenegade(t *testing.T) {
+func Test_RenegadeHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -307,19 +307,19 @@ func Test_HTMLRenegade(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLRenegade(&got, []byte(tt.args.s))
+			err := bbs.RenegadeHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLRenegade() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RenegadeHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLRenegade() = %v, want %v", got, tt.want)
+				t.Errorf("RenegadeHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLPCBoard(t *testing.T) {
+func Test_PCBoardHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -345,19 +345,19 @@ func Test_HTMLPCBoard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLPCBoard(&got, []byte(tt.args.s))
+			err := bbs.PCBoardHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLPCBoard() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("PCBoardHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLPCBoard() = %v, want %v", got, tt.want)
+				t.Errorf("PCBoardHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLTelegard(t *testing.T) {
+func Test_TelegardHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -374,19 +374,19 @@ func Test_HTMLTelegard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLTelegard(&got, []byte(tt.args.s))
+			err := bbs.TelegardHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLTelegard() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("TelegardHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLTelegard() = %v, want %v", got, tt.want)
+				t.Errorf("TelegardHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLWHash(t *testing.T) {
+func Test_WWIVHashHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -403,19 +403,19 @@ func Test_HTMLWHash(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLWHash(&got, []byte(tt.args.s))
+			err := bbs.WWIVHashHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLWHash() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("WWIVHashHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLWHash() = %v, want %v", got, tt.want)
+				t.Errorf("WWIVHashHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLWHeart(t *testing.T) {
+func Test_WWIVHeartHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -432,19 +432,19 @@ func Test_HTMLWHeart(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.HTMLWHeart(&got, []byte(tt.args.s))
+			err := bbs.WWIVHeartHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HTMLWHeart() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("WWIVHeartHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("HTMLWHeart() = %v, want %v", got, tt.want)
+				t.Errorf("WWIVHeartHTML() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_HTMLWildcat(t *testing.T) {
+func Test_WildcatHTML(t *testing.T) {
 	type args struct {
 		s string
 	}
@@ -460,13 +460,13 @@ func Test_HTMLWildcat(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := bytes.Buffer{}
-		err := bbs.HTMLWildcat(&got, []byte(tt.args.s))
+		err := bbs.WildcatHTML(&got, []byte(tt.args.s))
 		if (err != nil) != tt.wantErr {
-			t.Errorf("HTMLWildcat() error = %v, wantErr %v", err, tt.wantErr)
+			t.Errorf("WildcatHTML() error = %v, wantErr %v", err, tt.wantErr)
 			return
 		}
 		if got.String() != tt.want {
-			t.Errorf("HTMLWildcat() = %v, want %v", got, tt.want)
+			t.Errorf("WildcatHTML() = %v, want %v", got, tt.want)
 		}
 	}
 }

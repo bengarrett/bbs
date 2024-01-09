@@ -96,29 +96,29 @@ const (
 )
 
 const (
-	// ClearCmd is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
-	ClearCmd string = "@CLS@"
+	// Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
+	Clear string = "@CLS@"
 
 	// CelerityRe is a regular expression to match Celerity BBS color codes.
 	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
 
 	// PCBoardMatch is a case-insensitive, regular expression to match PCBoard BBS color codes.
-	PCBoardMatch string = "(?i)@X([0-9A-F][0-9A-F])"
+	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
 
-	// RenegadeMatch is a regular expression to match Renegade BBS color codes.
-	RenegadeMatch string = `\|(0[0-9]|1[1-9]|2[0-3])`
+	// RenegadeRe is a regular expression to match Renegade BBS color codes.
+	RenegadeRe string = `\|(0[0-9]|1[1-9]|2[0-3])`
 
-	// TelegardMatch is a case-insensitive, regular expression to match Telegard BBS color codes.
-	TelegardMatch string = "(?i)`([0-9|A-F])([0-9|A-F])"
+	// TelegardRe is a case-insensitive, regular expression to match Telegard BBS color codes.
+	TelegardRe string = "(?i)`([0-9|A-F])([0-9|A-F])"
 
-	// WildcatMatch is a case-insensitive, regular expression to match Wildcat! BBS color codes.
-	WildcatMatch string = `(?i)@([0-9|A-F])([0-9|A-F])@`
+	// WildcatRe is a case-insensitive, regular expression to match Wildcat! BBS color codes.
+	WildcatRe string = `(?i)@([0-9|A-F])([0-9|A-F])@`
 
-	// WWIVHashMatch is a regular expression to match WWIV BBS # color codes.
-	WWIVHashMatch string = `\|#(\d)`
+	// WWIVHashRe is a regular expression to match WWIV BBS # color codes.
+	WWIVHashRe string = `\|#(\d)`
 
-	// WWIVHeartMatch is a regular expression to match WWIV BBS ♥ color codes.
-	WWIVHeartMatch string = `\x03(\d)`
+	// WWIVHeartRe is a regular expression to match WWIV BBS ♥ color codes.
+	WWIVHeartRe string = `\x03(\d)`
 
 	celerityCodes = "kbgcrmywdBGCRMYWS"
 )
@@ -129,74 +129,74 @@ func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	return split.HTMLCelerity(dst, src)
+	return split.CelerityHTML(dst, src)
 }
 
-// HTMLRenegade writes to dst the HTML equivalent of Renegade BBS color codes with
+// RenegadeHTML writes to dst the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
-func HTMLRenegade(dst *bytes.Buffer, src []byte) error {
+func RenegadeHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	return split.HTMLBars(dst, src)
+	return split.VBarsHTML(dst, src)
 }
 
-// HTMLPCBoard writes to dst the HTML equivalent of PCBoard BBS color codes with
+// PCBoardHTML writes to dst the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
-func HTMLPCBoard(dst *bytes.Buffer, src []byte) error {
+func PCBoardHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	return split.HTMLPCBoard(dst, src)
+	return split.PCBoardHTML(dst, src)
 }
 
-// HTMLTelegard writes to dst the HTML equivalent of Telegard BBS color codes with
+// TelegardHTML writes to dst the HTML equivalent of Telegard BBS color codes with
 // matching CSS color classes.
-func HTMLTelegard(dst *bytes.Buffer, src []byte) error {
+func TelegardHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	r := regexp.MustCompile(TelegardMatch)
+	r := regexp.MustCompile(TelegardRe)
 	x := r.ReplaceAll(src, []byte(`@X$1$2`))
-	return split.HTMLPCBoard(dst, x)
+	return split.PCBoardHTML(dst, x)
 }
 
-// HTMLWildcat writes to dst the HTML equivalent of Wildcat! BBS color codes with
+// WildcatHTML writes to dst the HTML equivalent of Wildcat! BBS color codes with
 // matching CSS color classes.
-func HTMLWildcat(dst *bytes.Buffer, src []byte) error {
+func WildcatHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	r := regexp.MustCompile(WildcatMatch)
+	r := regexp.MustCompile(WildcatRe)
 	x := r.ReplaceAll(src, []byte(`@X$1$2`))
-	return split.HTMLPCBoard(dst, x)
+	return split.PCBoardHTML(dst, x)
 }
 
-// HTMLWildcat writes to dst the HTML equivalent of WWIV BBS # color codes with
+// WWIVHashHTML writes to dst the HTML equivalent of WWIV BBS # color codes with
 // matching CSS color classes.
-func HTMLWHash(dst *bytes.Buffer, src []byte) error {
+func WWIVHashHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	r := regexp.MustCompile(WWIVHashMatch)
+	r := regexp.MustCompile(WWIVHashRe)
 	x := r.ReplaceAll(src, []byte(`|0$1`))
-	return split.HTMLBars(dst, x)
+	return split.VBarsHTML(dst, x)
 }
 
-// HTMLWildcat writes to dst the HTML equivalent of WWIV BBS ♥ color codes with
+// WWIVHeartHTML writes to dst the HTML equivalent of WWIV BBS ♥ color codes with
 // matching CSS color classes.
-func HTMLWHeart(dst *bytes.Buffer, src []byte) error {
+func WWIVHeartHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
-	r := regexp.MustCompile(WWIVHeartMatch)
+	r := regexp.MustCompile(WWIVHeartRe)
 	x := r.ReplaceAll(src, []byte(`|0$1`))
-	return split.HTMLBars(dst, x)
+	return split.VBarsHTML(dst, x)
 }
 
-// HasCelerity reports if the bytes contains Celerity BBS color codes.
+// IsCelerity reports if the bytes contains Celerity BBS color codes.
 // The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
-func HasCelerity(src []byte) bool {
+func IsCelerity(src []byte) bool {
 	// celerityCodes contains all the character sequences for Celerity.
 	for _, code := range []byte(celerityCodes) {
 		if bytes.Contains(src, []byte{Celerity.Bytes()[0], code}) {
@@ -206,9 +206,9 @@ func HasCelerity(src []byte) bool {
 	return false
 }
 
-// HasPCBoard reports if the bytes contains PCBoard BBS color codes.
+// IsPCBoard reports if the bytes contains PCBoard BBS color codes.
 // The format uses an "@X" prefix with a background and foreground, 4-bit hexadecimal color value.
-func HasPCBoard(src []byte) bool {
+func IsPCBoard(src []byte) bool {
 	const first, last = 0, 15
 	const hexxed = "%X%X"
 	for bg := first; bg <= last; bg++ {
@@ -223,9 +223,9 @@ func HasPCBoard(src []byte) bool {
 	return false
 }
 
-// HasRenegade reports if the bytes contains Renegade BBS color codes.
+// IsRenegade reports if the bytes contains Renegade BBS color codes.
 // The format uses the vertical bar "|" followed by a padded, numeric value between 00 and 23.
-func HasRenegade(src []byte) bool {
+func IsRenegade(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
@@ -238,9 +238,9 @@ func HasRenegade(src []byte) bool {
 	return false
 }
 
-// HasTelegard reports if the bytes contains Telegard BBS color codes.
+// IsTelegard reports if the bytes contains Telegard BBS color codes.
 // The format uses the grave accent followed by a padded, numeric value between 00 and 23.
-func HasTelegard(src []byte) bool {
+func IsTelegard(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
@@ -253,10 +253,10 @@ func HasTelegard(src []byte) bool {
 	return false
 }
 
-// HasWildcat reports if the bytes contains Wildcat! BBS color codes.
+// IsWildcat reports if the bytes contains Wildcat! BBS color codes.
 // The format uses an a background and foreground,
 // 4-bit hexadecimal color value enclosed by two at "@" characters.
-func HasWildcat(src []byte) bool {
+func IsWildcat(src []byte) bool {
 	const first, last = 0, 15
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
@@ -270,10 +270,10 @@ func HasWildcat(src []byte) bool {
 	return false
 }
 
-// HasWHash reports if the bytes contains WWIV BBS # (hash or pound) color codes.
+// IsWWIVHash reports if the bytes contains WWIV BBS # (hash or pound) color codes.
 // The format uses a vertical bar "|" with the hash "#" characters
 // as a prefix with a numeric value between 0 and 9.
-func HasWHash(src []byte) bool {
+func IsWWIVHash(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
@@ -284,11 +284,11 @@ func HasWHash(src []byte) bool {
 	return false
 }
 
-// HasWHeart reports if the bytes contains WWIV BBS ♥ (heart) color codes.
+// IsWWIVHeart reports if the bytes contains WWIV BBS ♥ (heart) color codes.
 // The format uses the ETX character as a prefix with a numeric value between 0 and 9.
 // In the standard MS-DOS, USA codepage (CP-437), the ETX (end-of-text)
 // character is substituted with a heart character.
-func HasWHeart(src []byte) bool {
+func IsWWIVHeart(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
@@ -300,6 +300,8 @@ func HasWHeart(src []byte) bool {
 }
 
 // TrimControls removes common PCBoard BBS controls prefixes from the bytes.
+// It trims the "@CLS@" prefix used to clear the screen and the "@PAUSE@" prefix
+// used to pause the display render.
 func TrimControls(src []byte) []byte {
 	r := regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
 	return r.ReplaceAll(src, []byte(""))
@@ -326,7 +328,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	case PCBoard, Telegard, Wildcat:
 		return split.PCBoard(b), f, nil
 	case Renegade, WWIVHash, WWIVHeart:
-		return split.Bars(b), f, nil
+		return split.VBars(b), f, nil
 	}
 	return nil, -1, ErrNone
 }
@@ -341,9 +343,9 @@ func Find(src io.Reader) BBS {
 		if ts == nil {
 			continue
 		}
-		const l = len(ClearCmd)
+		const l = len(Clear)
 		if len(ts) > l {
-			if bytes.Equal(ts[0:l], []byte(ClearCmd)) {
+			if bytes.Equal(ts[0:l], []byte(Clear)) {
 				b = ts[l:]
 			}
 		}
@@ -351,22 +353,22 @@ func Find(src io.Reader) BBS {
 		case bytes.Contains(b, ANSI.Bytes()):
 			return ANSI
 		case bytes.Contains(b, Celerity.Bytes()):
-			if HasRenegade(b) {
+			if IsRenegade(b) {
 				return Renegade
 			}
-			if HasCelerity(b) {
+			if IsCelerity(b) {
 				return Celerity
 			}
 			return -1
-		case HasPCBoard(b):
+		case IsPCBoard(b):
 			return PCBoard
-		case HasTelegard(b):
+		case IsTelegard(b):
 			return Telegard
-		case HasWildcat(b):
+		case IsWildcat(b):
 			return Wildcat
-		case HasWHash(b):
+		case IsWWIVHash(b):
 			return WWIVHash
-		case HasWHeart(b):
+		case IsWWIVHeart(b):
 			return WWIVHeart
 		}
 	}
@@ -450,17 +452,17 @@ func (b BBS) HTML(dst *bytes.Buffer, src []byte) error {
 	case Celerity:
 		return CelerityHTML(dst, x)
 	case PCBoard:
-		return HTMLPCBoard(dst, x)
+		return PCBoardHTML(dst, x)
 	case Renegade:
-		return HTMLRenegade(dst, x)
+		return RenegadeHTML(dst, x)
 	case Telegard:
-		return HTMLTelegard(dst, x)
+		return TelegardHTML(dst, x)
 	case Wildcat:
-		return HTMLWildcat(dst, x)
+		return WildcatHTML(dst, x)
 	case WWIVHash:
-		return HTMLWHash(dst, x)
+		return WWIVHashHTML(dst, x)
 	case WWIVHeart:
-		return HTMLWHeart(dst, x)
+		return WWIVHeartHTML(dst, x)
 	default:
 		return ErrNone
 	}
@@ -494,17 +496,17 @@ func (b BBS) Remove(dst *bytes.Buffer, src []byte) error {
 	case Celerity:
 		return remove(dst, src, CelerityRe)
 	case PCBoard:
-		return remove(dst, src, PCBoardMatch)
+		return remove(dst, src, PCBoardRe)
 	case Renegade:
-		return remove(dst, src, RenegadeMatch)
+		return remove(dst, src, RenegadeRe)
 	case Telegard:
-		return remove(dst, src, TelegardMatch)
+		return remove(dst, src, TelegardRe)
 	case Wildcat:
-		return remove(dst, src, WildcatMatch)
+		return remove(dst, src, WildcatRe)
 	case WWIVHash:
-		return remove(dst, src, WWIVHashMatch)
+		return remove(dst, src, WWIVHashRe)
 	case WWIVHeart:
-		return remove(dst, src, WWIVHeartMatch)
+		return remove(dst, src, WWIVHeartRe)
 	default:
 		return ErrNone
 	}
