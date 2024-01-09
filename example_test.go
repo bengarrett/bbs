@@ -6,16 +6,13 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/bengarrett/bbs"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/transform"
-
-	"github.com/bengarrett/bbs"
 )
 
-var (
-	//go:embed static/*
-	static embed.FS
-)
+//go:embed static/*
+var static embed.FS
 
 func Example() {
 	// print about the file

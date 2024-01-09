@@ -22,7 +22,7 @@ func ExampleFields() {
 func ExampleFields_none() {
 	r := strings.NewReader("Hello world.")
 	_, _, err := bbs.Fields(r)
-	if errors.Is(err, bbs.ErrColorCodes) {
+	if errors.Is(err, bbs.ErrNone) {
 		fmt.Print(err)
 	}
 	// Output: no bbs color codes found

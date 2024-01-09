@@ -80,11 +80,13 @@ func ExampleHasWHash() {
 	fmt.Printf("Has b WVIV BBS # text? %v", bbs.HasWHash(b))
 	// Output: Has b WVIV BBS # text? true
 }
+
 func ExampleHasWHeart() {
 	b := []byte("\x037Hello world")
 	fmt.Printf("Has b WWIV BBS ♥ text? %v", bbs.HasWHeart(b))
 	// Output: Has b WWIV BBS ♥ text? true
 }
+
 func ExampleHasWildcat() {
 	b := []byte("@0F@Hello world")
 	fmt.Printf("Has b Wildcat! BBS text? %v", bbs.HasWildcat(b))
@@ -126,7 +128,7 @@ func ExampleBBS_CSS() {
 		fmt.Print(err)
 	}
 
-	f, err := os.OpenFile("pcboard.css", os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("pcboard.css", os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}

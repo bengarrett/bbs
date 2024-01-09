@@ -16,32 +16,32 @@
 // *Please note, while many PC/MS-DOS boards used ANSI control codes for colorizations,
 // this library does not support the standard.
 //
-// PCBoard
+// # PCBoard
 //
 // One of the most well-known applications for hosting a PC/MS-DOS BBS, PCBoard
 // pioneered the file_id.diz file descriptor, as well as being endlessly expandable
 // through software plugins known as PPEs. It developed the popular @X color code and
 // @ control syntax.
 //
-// Celerity
+// # Celerity
 //
 // Another PC/MS-DOS application that was very popular with the hacking, phreaking,
 // and pirate communities in the early 1990s. It introduced a unique | pipe code
 // syntax in late 1991 that revised the code syntax in version 2 of the software.
 //
-// Renegade
+// # Renegade
 //
 // A PC/MS-DOS application that was a derivative of the source code of Telegard BBS.
 // Surprisingly there was a new release of this software in 2021. Renegade had two
 // methods to implement color, and this library uses the Pipe Bar Color Codes.
 //
-// Telegard
+// # Telegard
 //
 // A PC/MS-DOS application became famous due to a source code leak or release by
 // one of its authors back in an era when most developers were still highly
 // secretive with their code. The source is incorporated into several other projects.
 //
-// WVIV
+// # WVIV
 //
 // A mainstay in the PC/MS-DOS BBS scene of the 1980s and early 1990s, it became well
 // known for releasing its source code to registered users. It allowed them to expand
@@ -50,13 +50,12 @@
 // Confusingly WWIV has three methods of colorizing text, 10 Pipe colors, two-digit
 // pipe colors, and its original Heart Codes.
 //
-// Wildcat
+// # Wildcat
 //
 // WILDCAT! was a popular, propriety PC/MS-DOS application from the late 1980s that
 // later migrated to Windows. It was one of the few BBS applications that sold at
 // retail in a physical box. It extensively used @ color codes throughout later
 // revisions of its software.
-//
 package bbs
 
 import (
@@ -73,12 +72,13 @@ import (
 )
 
 var (
-	ErrColorCodes = errors.New("no bbs color codes found")
-	ErrANSI       = errors.New("ansi escape code found")
-
-	//go:embed static/*
-	static embed.FS
+	ErrANSI = errors.New("ansi escape code found")
+	ErrBuff = errors.New("bytes buffer cannot be nil")
+	ErrNone = errors.New("no bbs color codes found")
 )
+
+//go:embed static/*
+var static embed.FS
 
 // Bulletin Board System color code format.
 // Other than for Find, the ANSI type is not supported by this library.
@@ -126,24 +126,36 @@ const (
 // HTMLCelerity writes to dst the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
 func HTMLCelerity(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	return split.HTMLCelerity(dst, src)
 }
 
 // HTMLRenegade writes to dst the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
 func HTMLRenegade(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	return split.HTMLBars(dst, src)
 }
 
 // HTMLPCBoard writes to dst the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func HTMLPCBoard(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	return split.HTMLPCBoard(dst, src)
 }
 
 // HTMLTelegard writes to dst the HTML equivalent of Telegard BBS color codes with
 // matching CSS color classes.
 func HTMLTelegard(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	r := regexp.MustCompile(TelegardMatch)
 	x := r.ReplaceAll(src, []byte(`@X$1$2`))
 	return split.HTMLPCBoard(dst, x)
@@ -152,6 +164,9 @@ func HTMLTelegard(dst *bytes.Buffer, src []byte) error {
 // HTMLWildcat writes to dst the HTML equivalent of Wildcat! BBS color codes with
 // matching CSS color classes.
 func HTMLWildcat(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	r := regexp.MustCompile(WildcatMatch)
 	x := r.ReplaceAll(src, []byte(`@X$1$2`))
 	return split.HTMLPCBoard(dst, x)
@@ -160,6 +175,9 @@ func HTMLWildcat(dst *bytes.Buffer, src []byte) error {
 // HTMLWildcat writes to dst the HTML equivalent of WWIV BBS # color codes with
 // matching CSS color classes.
 func HTMLWHash(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	r := regexp.MustCompile(WWIVHashMatch)
 	x := r.ReplaceAll(src, []byte(`|0$1`))
 	return split.HTMLBars(dst, x)
@@ -168,6 +186,9 @@ func HTMLWHash(dst *bytes.Buffer, src []byte) error {
 // HTMLWildcat writes to dst the HTML equivalent of WWIV BBS ♥ color codes with
 // matching CSS color classes.
 func HTMLWHeart(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	r := regexp.MustCompile(WWIVHeartMatch)
 	x := r.ReplaceAll(src, []byte(`|0$1`))
 	return split.HTMLBars(dst, x)
@@ -291,7 +312,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	r2 := io.TeeReader(src, &r1)
 	f := Find(r2)
 	if !f.Valid() {
-		return nil, -1, ErrColorCodes
+		return nil, -1, ErrNone
 	}
 	b, err := io.ReadAll(&r1)
 	if err != nil {
@@ -307,7 +328,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	case Renegade, WWIVHash, WWIVHeart:
 		return split.Bars(b), f, nil
 	}
-	return nil, -1, ErrColorCodes
+	return nil, -1, ErrNone
 }
 
 // Find the format of any known BBS color code sequence within the reader.
@@ -432,7 +453,7 @@ func (b BBS) HTML(dst *bytes.Buffer, src []byte) error {
 	case WWIVHeart:
 		return HTMLWHeart(dst, x)
 	default:
-		return ErrColorCodes
+		return ErrNone
 	}
 }
 
@@ -473,7 +494,7 @@ func (b BBS) Remove(dst *bytes.Buffer, src []byte) error {
 	case WWIVHeart:
 		return remove(dst, src, WWIVHeartMatch)
 	default:
-		return ErrColorCodes
+		return ErrNone
 	}
 }
 

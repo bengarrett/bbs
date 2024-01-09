@@ -99,10 +99,16 @@ func TestBBS_HTML(t *testing.T) {
 		{"empty", -1, args{}, "", true},
 		{"plaintext", -1, args{"text"}, "", true},
 		{"plaintext", bbs.ANSI, args{"\x27\x91text"}, "", true},
-		{"celerity", bbs.Celerity, args{"|S|gHello|Rworld"},
-			"<i class=\"PBg PFw\">Hello</i><i class=\"PBR PFw\">world</i>", false},
-		{"xss", bbs.Celerity, args{"|S|gABC<script>alert('xss');</script>D|REF"},
-			"<i class=\"PBg PFw\">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i><i class=\"PBR PFw\">EF</i>", false},
+		{
+			"celerity", bbs.Celerity,
+			args{"|S|gHello|Rworld"},
+			"<i class=\"PBg PFw\">Hello</i><i class=\"PBR PFw\">world</i>", false,
+		},
+		{
+			"xss", bbs.Celerity,
+			args{"|S|gABC<script>alert('xss');</script>D|REF"},
+			"<i class=\"PBg PFw\">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i><i class=\"PBR PFw\">EF</i>", false,
+		},
 	}
 	for _, tt := range tests {
 		got := bytes.Buffer{}
@@ -287,10 +293,16 @@ func Test_HTMLRenegade(t *testing.T) {
 		{"false pos", args{"hello|world"}, "hello|world", false},
 		{"false pos double", args{"| hello world |"}, "| hello world |", false},
 		{"prefix", args{"|" + black + white + "Hello world"}, "<i class=\"P0 P7\">Hello world</i>", false},
-		{"multi", args{"|" + black + white + "White |" + red + "Red Background"},
-			"<i class=\"P0 P7\">White </i><i class=\"P20 P7\">Red Background</i>", false},
-		{"newline", args{"|07White\n|20Red Background"},
-			"<i class=\"P0 P7\">White\n</i><i class=\"P20 P7\">Red Background</i>", false},
+		{
+			"multi",
+			args{"|" + black + white + "White |" + red + "Red Background"},
+			"<i class=\"P0 P7\">White </i><i class=\"P20 P7\">Red Background</i>", false,
+		},
+		{
+			"newline",
+			args{"|07White\n|20Red Background"},
+			"<i class=\"P0 P7\">White\n</i><i class=\"P20 P7\">Red Background</i>", false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -519,4 +531,12 @@ func TestTrimControls(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHTMLCelerityNil(t *testing.T) {
+	t.Run("nil", func(t *testing.T) {
+		if err := bbs.HTMLCelerity(nil, []byte{}); err == nil {
+			t.Errorf("HTMLCelerity() error = %v, wantErr %v", err, true)
+		}
+	})
 }
