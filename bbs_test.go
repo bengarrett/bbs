@@ -533,10 +533,10 @@ func TestTrimControls(t *testing.T) {
 	}
 }
 
-func TestHTMLCelerityNil(t *testing.T) {
+func TestCelerityHTMLNil(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
-		if err := bbs.HTMLCelerity(nil, []byte{}); err == nil {
-			t.Errorf("HTMLCelerity() error = %v, wantErr %v", err, true)
+		if err := bbs.CelerityHTML(nil, []byte{}); err == nil {
+			t.Errorf("CelerityHTML() error = %v, wantErr %v", err, true)
 		}
 	})
 }

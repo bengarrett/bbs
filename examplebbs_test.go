@@ -30,10 +30,10 @@ func ExampleHTMLRenegade() {
 	// Output: <i class="P0 P3">Hello </i><i class="P0 P7"></i><i class="P19 P7">world</i>
 }
 
-func ExampleHTMLCelerity() {
+func ExampleCelerityHTML() {
 	var out bytes.Buffer
 	src := []byte("|cHello |C|S|wworld")
-	if err := bbs.HTMLCelerity(&out, src); err != nil {
+	if err := bbs.CelerityHTML(&out, src); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Print(out.String())

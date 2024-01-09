@@ -99,8 +99,8 @@ const (
 	// ClearCmd is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
 	ClearCmd string = "@CLS@"
 
-	// CelerityMatch is a regular expression to match Celerity BBS color codes.
-	CelerityMatch string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
+	// CelerityRe is a regular expression to match Celerity BBS color codes.
+	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
 
 	// PCBoardMatch is a case-insensitive, regular expression to match PCBoard BBS color codes.
 	PCBoardMatch string = "(?i)@X([0-9A-F][0-9A-F])"
@@ -123,9 +123,9 @@ const (
 	celerityCodes = "kbgcrmywdBGCRMYWS"
 )
 
-// HTMLCelerity writes to dst the HTML equivalent of Celerity BBS color codes with
+// CelerityHTML writes to dst the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
-func HTMLCelerity(dst *bytes.Buffer, src []byte) error {
+func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
 	}
@@ -376,10 +376,11 @@ func Find(src io.Reader) BBS {
 // HTML writes to dst the HTML equivalent of BBS color codes with matching CSS color classes.
 // The first found color code format is used for the remainder of the Reader.
 func HTML(dst *bytes.Buffer, src io.Reader) (BBS, error) {
-	var r1 bytes.Buffer
-
+	if dst == nil {
+		return -1, ErrBuff
+	}
+	r1 := bytes.Buffer{}
 	r2 := io.TeeReader(src, &r1)
-
 	find := Find(r2)
 	b, err := io.ReadAll(&r1)
 	if err != nil {
@@ -424,22 +425,30 @@ func (b BBS) Bytes() []byte {
 // The CSS relies on cascading variables.
 // See https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties for details.
 func (b BBS) CSS(dst *bytes.Buffer) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	r, err := static.ReadFile("static/css/text_pcboard.css")
 	if err != nil {
 		return err
 	}
-	dst.Write(r)
+	if _, err = dst.Write(r); err != nil {
+		return err
+	}
 	return nil
 }
 
 // HTML writes to dst the HTML equivalent of BBS color codes with matching CSS color classes.
 func (b BBS) HTML(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	x := TrimControls(src)
 	switch b {
 	case ANSI:
 		return ErrANSI
 	case Celerity:
-		return HTMLCelerity(dst, x)
+		return CelerityHTML(dst, x)
 	case PCBoard:
 		return HTMLPCBoard(dst, x)
 	case Renegade:
@@ -476,11 +485,14 @@ func (b BBS) Name() string {
 
 // Remove the BBS color codes from src and write it to dst.
 func (b BBS) Remove(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	switch b {
 	case ANSI:
 		return ErrANSI
 	case Celerity:
-		return remove(dst, src, CelerityMatch)
+		return remove(dst, src, CelerityRe)
 	case PCBoard:
 		return remove(dst, src, PCBoardMatch)
 	case Renegade:
@@ -499,6 +511,9 @@ func (b BBS) Remove(dst *bytes.Buffer, src []byte) error {
 }
 
 func remove(dst *bytes.Buffer, src []byte, expr string) error {
+	if dst == nil {
+		return ErrBuff
+	}
 	m := regexp.MustCompile(expr)
 	res := m.ReplaceAll(src, []byte(""))
 	_, err := dst.Write(res)
