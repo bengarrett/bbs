@@ -10,9 +10,7 @@ import (
 	"strings"
 )
 
-var (
-	ErrBuff = errors.New("bytes buffer cannot be nil")
-)
+var ErrBuff = errors.New("bytes buffer cannot be nil")
 
 // colorInt template data for integer based color codes.
 type colorInt struct {
@@ -75,7 +73,11 @@ func VBarsHTML(dst *bytes.Buffer, src []byte) error {
 		return err
 	}
 
-	d := colorInt{}
+	d := colorInt{
+		Foreground: -1,
+		Background: -1,
+		Content:    "",
+	}
 	bars := VBars(src)
 	if len(bars) == 0 {
 		_, err := dst.Write(src)
@@ -102,20 +104,22 @@ func VBarsHTML(dst *bytes.Buffer, src []byte) error {
 }
 
 func barBackground(n int) bool {
-	if n < 16 {
+	const first, last = 16, 23
+	if n < first {
 		return false
 	}
-	if n > 23 {
+	if n > last {
 		return false
 	}
 	return true
 }
 
 func barForeground(n int) bool {
-	if n < 0 {
+	const first, last = 0, 15
+	if n < first {
 		return false
 	}
-	if n > 15 {
+	if n > last {
 		return false
 	}
 	return true
@@ -162,6 +166,7 @@ func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 	d := colorStr{
 		Foreground: "w",
 		Background: "k",
+		Content:    "",
 	}
 
 	bars := Celerity(src)
@@ -224,7 +229,11 @@ func PCBoardHTML(dst *bytes.Buffer, src []byte) error {
 		return err
 	}
 
-	d := colorStr{}
+	d := colorStr{
+		Foreground: "",
+		Background: "",
+		Content:    "",
+	}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
 		_, err := dst.Write(src)

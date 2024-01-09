@@ -507,9 +507,8 @@ func (b BBS) Remove(dst *bytes.Buffer, src []byte) error {
 		return remove(dst, src, WWIVHashRe)
 	case WWIVHeart:
 		return remove(dst, src, WWIVHeartRe)
-	default:
-		return ErrNone
 	}
+	return ErrNone
 }
 
 func remove(dst *bytes.Buffer, src []byte, expr string) error {

@@ -136,9 +136,9 @@ func ExampleBBS_CSS() {
 	//
 	// /* PCBoard and WildCat! BBS colours */
 	//
-	//i.PF0 {
+	// i.PF0 {
 	//     color: var(--black);
-	//}
+	// }
 }
 
 func ExampleBBS_HTML() {

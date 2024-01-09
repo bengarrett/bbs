@@ -3,6 +3,7 @@ package split_test
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/bengarrett/bbs/internal/split"
@@ -27,7 +28,7 @@ func Test_VBars(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := len(split.VBars([]byte(tt.args.s))); got != tt.want {
-				fmt.Println(split.VBars([]byte(tt.args.s)))
+				fmt.Fprintln(os.Stderr, split.VBars([]byte(tt.args.s)))
 				t.Errorf("VBars() = %v, want %v", got, tt.want)
 			}
 		})
@@ -54,7 +55,7 @@ func Test_Celerity(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := len(split.Celerity([]byte(tt.args.s))); got != tt.want {
-				fmt.Println(split.Celerity([]byte(tt.args.s)))
+				fmt.Fprintln(os.Stderr, split.Celerity([]byte(tt.args.s)))
 				t.Errorf("Celerity() = %v, want %v", got, tt.want)
 			}
 		})
@@ -80,7 +81,7 @@ func Test_PCBoard(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := len(split.PCBoard([]byte(tt.args.s))); got != tt.want {
-				fmt.Println(split.PCBoard([]byte(tt.args.s)))
+				fmt.Fprintln(os.Stderr, split.PCBoard([]byte(tt.args.s)))
 				t.Errorf("PCBoard() = %v, want %v", got, tt.want)
 			}
 		})

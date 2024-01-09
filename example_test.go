@@ -24,14 +24,16 @@ func Example() {
 
 	s, b, err := bbs.Fields(file)
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	fmt.Printf("Found %d %s color controls.\n\n", len(s), b)
 
 	// reopen the file
 	file, err = static.Open("static/examples/hello.pcb")
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	defer file.Close()
 
@@ -42,7 +44,8 @@ func Example() {
 	// create the HTML equivalent of BBS color codes
 	var buf bytes.Buffer
 	if _, err := bbs.HTML(&buf, reader); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 	fmt.Print(buf.String())
 
