@@ -74,8 +74,8 @@ func VBarsHTML(dst *bytes.Buffer, src []byte) error {
 	}
 
 	d := colorInt{
-		Foreground: -1,
-		Background: -1,
+		Foreground: 0,
+		Background: 0,
 		Content:    "",
 	}
 	bars := VBars(src)

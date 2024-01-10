@@ -22,12 +22,12 @@ func Example() {
 	}
 	defer file.Close()
 
-	s, b, err := bbs.Fields(file)
+	s, name, err := bbs.Fields(file)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-	fmt.Printf("Found %d %s color controls.\n\n", len(s), b)
+	fmt.Printf("Found %d %s color controls.\n\n", len(s), name)
 
 	// reopen the file
 	file, err = static.Open("static/examples/hello.pcb")

@@ -1,20 +1,20 @@
-// Package bbs interacts with legacy textfiles encoded with
-// Bulletin Board Systems (BBS) color codes to reconstruct them into HTML documents.
+// Package bbs is a Go module that interacts with legacy textfiles encoded with
+// [Bulletin Board Systems] (BBS) color codes to reconstruct them into HTML documents.
 //
-// BBSes were popular in the 1980s and 1990s, and allowed computer users to chat,
-// message, and share files over the landline telephone network. The commercialization
-// and ease of access to the Internet eventually replaced BBSes, as did the world-wide-web.
+// BBSes were popular in the 1980s and 1990s and allowed computer users to
+// chat, message, and share files over the landline telephone network. The
+// commercialization and ease of access to the Internet eventually replaced BBSes,
+// as did the worldwide-web. These centralized systems, termed boards, used a text-based
+// interface, and their owners often applied colorization, text themes, and art to
+// differentiate themselves.
 //
-// These centralized systems, termed boards, used a text-based interface, and their
-// owners often applied colorization, text themes, and art to differentiate themselves.
+// While in the 1990s, [ANSI control codes] were in everyday use on the PC/MS-DOS,
+// the standard comes from mainframe equipment. Home microcomputers often had
+// difficulty interpreting it. So, BBS developers created their own, more straightforward
+// methods to colorize and theme the text output to solve this.
 //
-// While in the 1990s, ANSI control codes were in everyday use on the PC/MS-DOS, the
-// standard comes from mainframe equipment. Home microcomputers often had difficulty
-// interpreting it. So BBS developers created their own, more straightforward methods
-// to colorize and theme the text output to solve this.
-//
-// *Please note, while many PC/MS-DOS boards used ANSI control codes for colorizations,
-// this library does not support the standard.
+// *Please note that many microcomputer, PC and MS-DOS based boards used ANSI control
+// codes for colorizations that this library does not support.
 //
 // # PCBoard
 //
@@ -56,6 +56,9 @@
 // later migrated to Windows. It was one of the few BBS applications that sold at
 // retail in a physical box. It extensively used @ color codes throughout later
 // revisions of its software.
+//
+// [Bulletin Board Systems]: https://spectrum.ieee.org/social-medias-dialup-ancestor-the-bulletin-board-system
+// [ANSI control codes]: https://www.cse.psu.edu/~kxc104/class/cse472/09f/hw/hw7/vt100ansi.htm
 package bbs
 
 import (
@@ -71,54 +74,35 @@ import (
 	"github.com/bengarrett/bbs/internal/split"
 )
 
+// Generic text match errors.
+// Errors returned can be tested against these errors using errors.Is.
 var (
 	ErrANSI = errors.New("ansi escape code found")
+	ErrNone = errors.New("no bbs color code found")
+)
+
+// Syntax errors.
+var (
 	ErrBuff = errors.New("bytes buffer cannot be nil")
-	ErrNone = errors.New("no bbs color codes found")
 )
 
 //go:embed static/*
 var static embed.FS
 
-// Bulletin Board System color code format.
-// Other than for Find, the ANSI type is not supported by this library.
-type BBS int
-
+// Regular expressions to match BBS color codes.
 const (
-	ANSI      BBS = iota // ANSI escape sequences.
-	Celerity             // Celerity BBS pipe codes.
-	PCBoard              // PCBoard BBS @ codes.
-	Renegade             // Renegade BBS pipe codes.
-	Telegard             // Telegard BBS grave accent codes.
-	Wildcat              // Wildcat! BBS @ codes.
-	WWIVHash             // WWIV BBS # codes.
-	WWIVHeart            // WWIV BBS ♥ codes.
+	CelerityRe  string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)` // matches Celerity
+	PCBoardRe   string = "(?i)@X([0-9A-F][0-9A-F])"              // matches PCBoard
+	RenegadeRe  string = `\|(0[0-9]|1[1-9]|2[0-3])`              // matches Renegade
+	TelegardRe  string = "(?i)`([0-9|A-F])([0-9|A-F])"           // matches Telegard
+	WildcatRe   string = `(?i)@([0-9|A-F])([0-9|A-F])@`          // matches Wildcat!
+	WWIVHashRe  string = `\|#(\d)`                               // matches WWIV with hashes #
+	WWIVHeartRe string = `\x03(\d)`                              // matches WWIV with hearts ♥
 )
 
+// Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
 const (
-	// Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
 	Clear string = "@CLS@"
-
-	// CelerityRe is a regular expression to match Celerity BBS color codes.
-	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
-
-	// PCBoardMatch is a case-insensitive, regular expression to match PCBoard BBS color codes.
-	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
-
-	// RenegadeRe is a regular expression to match Renegade BBS color codes.
-	RenegadeRe string = `\|(0[0-9]|1[1-9]|2[0-3])`
-
-	// TelegardRe is a case-insensitive, regular expression to match Telegard BBS color codes.
-	TelegardRe string = "(?i)`([0-9|A-F])([0-9|A-F])"
-
-	// WildcatRe is a case-insensitive, regular expression to match Wildcat! BBS color codes.
-	WildcatRe string = `(?i)@([0-9|A-F])([0-9|A-F])@`
-
-	// WWIVHashRe is a regular expression to match WWIV BBS # color codes.
-	WWIVHashRe string = `\|#(\d)`
-
-	// WWIVHeartRe is a regular expression to match WWIV BBS ♥ color codes.
-	WWIVHeartRe string = `\x03(\d)`
 
 	celerityCodes = "kbgcrmywdBGCRMYWS"
 )
@@ -141,6 +125,124 @@ func RenegadeHTML(dst *bytes.Buffer, src []byte) error {
 	return split.VBarsHTML(dst, src)
 }
 
+// WildcatHTML writes to dst the HTML equivalent of Wildcat! BBS color codes with
+// matching CSS color classes.
+func WildcatHTML(dst *bytes.Buffer, src []byte) error {
+	if dst == nil {
+		return ErrBuff
+	}
+	r := regexp.MustCompile(WildcatRe)
+	x := r.ReplaceAll(src, []byte(`@X$1$2`))
+	return split.PCBoardHTML(dst, x)
+}
+
+// IsCelerity reports if the bytes contains Celerity BBS color codes.
+// The format uses the vertical bar (|) followed by a case sensitive single alphabetic character.
+func IsCelerity(src []byte) bool {
+	// celerityCodes contains all the character sequences for Celerity.
+	for _, code := range []byte(celerityCodes) {
+		if bytes.Contains(src, []byte{Celerity.Bytes()[0], code}) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsPCBoard reports if the bytes contains PCBoard BBS color codes.
+// The format uses an at-sign x (@X) prefix with a background and foreground, 4-bit hexadecimal color value.
+func IsPCBoard(src []byte) bool {
+	const first, last = 0, 15
+	const hexxed = "%X%X"
+	for bg := first; bg <= last; bg++ {
+		for fg := first; fg <= last; fg++ {
+			subslice := []byte(fmt.Sprintf(hexxed, bg, fg))
+			subslice = append(PCBoard.Bytes(), subslice...)
+			if bytes.Contains(src, subslice) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// IsRenegade reports if the bytes contains Renegade BBS color codes.
+// The format uses the vertical bar (|) followed by a padded, numeric value between 00 and 23.
+func IsRenegade(src []byte) bool {
+	const first, last = 0, 23
+	const leadingZero = "%01d"
+	for i := first; i <= last; i++ {
+		subslice := []byte(fmt.Sprintf(leadingZero, i))
+		subslice = append(Renegade.Bytes(), subslice...)
+		if bytes.Contains(src, subslice) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsTelegard reports if the bytes contains Telegard BBS color codes.
+// The format uses the grave accent (`) followed by a padded, numeric value between 00 and 23.
+func IsTelegard(src []byte) bool {
+	const first, last = 0, 23
+	const leadingZero = "%01d"
+	for i := first; i <= last; i++ {
+		subslice := []byte(fmt.Sprintf(leadingZero, i))
+		subslice = append(Telegard.Bytes(), subslice...)
+		if bytes.Contains(src, subslice) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsWWIVHash reports if the bytes contains WWIV BBS hash color codes.
+// The format uses a vertical bar (|) with the hash (#) characters
+// as a prefix with a numeric value between 0 and 9.
+func IsWWIVHash(src []byte) bool {
+	const first, last = 0, 9
+	for i := first; i <= last; i++ {
+		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
+		if bytes.Contains(src, subslice) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsWWIVHeart reports if the bytes contains WWIV BBS heart (♥) color codes.
+// The format uses the ETX (end-of-text) character as a prefix with a numeric value between 0 and 9.
+//
+// In the MS-DOS era, the common North American [CP-437 codepage] substituted the ETX character with a heart symbol.
+//
+// [CP-437 codepage]: https://en.wikipedia.org/wiki/Code_page_437
+func IsWWIVHeart(src []byte) bool {
+	const first, last = 0, 9
+	for i := first; i <= last; i++ {
+		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
+		if bytes.Contains(src, subslice) {
+			return true
+		}
+	}
+	return false
+}
+
+// IsWildcat reports if the bytes contains Wildcat! BBS color codes.
+// The format uses an a background and foreground,
+// 4-bit hexadecimal color value enclosed with two at-sign (@) characters.
+func IsWildcat(src []byte) bool {
+	const first, last = 0, 15
+	for bg := first; bg <= last; bg++ {
+		for fg := first; fg <= last; fg++ {
+			subslice := []byte(fmt.Sprintf("%s%X%X%s",
+				Wildcat.Bytes(), bg, fg, Wildcat.Bytes()))
+			if bytes.Contains(src, subslice) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // PCBoardHTML writes to dst the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func PCBoardHTML(dst *bytes.Buffer, src []byte) error {
@@ -161,18 +263,15 @@ func TelegardHTML(dst *bytes.Buffer, src []byte) error {
 	return split.PCBoardHTML(dst, x)
 }
 
-// WildcatHTML writes to dst the HTML equivalent of Wildcat! BBS color codes with
-// matching CSS color classes.
-func WildcatHTML(dst *bytes.Buffer, src []byte) error {
-	if dst == nil {
-		return ErrBuff
-	}
-	r := regexp.MustCompile(WildcatRe)
-	x := r.ReplaceAll(src, []byte(`@X$1$2`))
-	return split.PCBoardHTML(dst, x)
+// TrimControls removes common PCBoard BBS controls prefixes from the bytes.
+// It trims the @CLS@ prefix used to clear the screen and the @PAUSE@ prefix
+// used to pause the display render.
+func TrimControls(src []byte) []byte {
+	r := regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
+	return r.ReplaceAll(src, []byte(""))
 }
 
-// WWIVHashHTML writes to dst the HTML equivalent of WWIV BBS # color codes with
+// WWIVHashHTML writes to dst the HTML equivalent of WWIV BBS hash (#) color codes with
 // matching CSS color classes.
 func WWIVHashHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
@@ -183,7 +282,7 @@ func WWIVHashHTML(dst *bytes.Buffer, src []byte) error {
 	return split.VBarsHTML(dst, x)
 }
 
-// WWIVHeartHTML writes to dst the HTML equivalent of WWIV BBS ♥ color codes with
+// WWIVHeartHTML writes to dst the HTML equivalent of WWIV BBS heart (♥) color codes with
 // matching CSS color classes.
 func WWIVHeartHTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
@@ -194,118 +293,21 @@ func WWIVHeartHTML(dst *bytes.Buffer, src []byte) error {
 	return split.VBarsHTML(dst, x)
 }
 
-// IsCelerity reports if the bytes contains Celerity BBS color codes.
-// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
-func IsCelerity(src []byte) bool {
-	// celerityCodes contains all the character sequences for Celerity.
-	for _, code := range []byte(celerityCodes) {
-		if bytes.Contains(src, []byte{Celerity.Bytes()[0], code}) {
-			return true
-		}
-	}
-	return false
-}
+// A BBS (Bulletin Board System) color code format,
+// other than for [Find], the [ANSI] BBS is not supported by this library.
+type BBS int
 
-// IsPCBoard reports if the bytes contains PCBoard BBS color codes.
-// The format uses an "@X" prefix with a background and foreground, 4-bit hexadecimal color value.
-func IsPCBoard(src []byte) bool {
-	const first, last = 0, 15
-	const hexxed = "%X%X"
-	for bg := first; bg <= last; bg++ {
-		for fg := first; fg <= last; fg++ {
-			subslice := []byte(fmt.Sprintf(hexxed, bg, fg))
-			subslice = append(PCBoard.Bytes(), subslice...)
-			if bytes.Contains(src, subslice) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// IsRenegade reports if the bytes contains Renegade BBS color codes.
-// The format uses the vertical bar "|" followed by a padded, numeric value between 00 and 23.
-func IsRenegade(src []byte) bool {
-	const first, last = 0, 23
-	const leadingZero = "%01d"
-	for i := first; i <= last; i++ {
-		subslice := []byte(fmt.Sprintf(leadingZero, i))
-		subslice = append(Renegade.Bytes(), subslice...)
-		if bytes.Contains(src, subslice) {
-			return true
-		}
-	}
-	return false
-}
-
-// IsTelegard reports if the bytes contains Telegard BBS color codes.
-// The format uses the grave accent followed by a padded, numeric value between 00 and 23.
-func IsTelegard(src []byte) bool {
-	const first, last = 0, 23
-	const leadingZero = "%01d"
-	for i := first; i <= last; i++ {
-		subslice := []byte(fmt.Sprintf(leadingZero, i))
-		subslice = append(Telegard.Bytes(), subslice...)
-		if bytes.Contains(src, subslice) {
-			return true
-		}
-	}
-	return false
-}
-
-// IsWildcat reports if the bytes contains Wildcat! BBS color codes.
-// The format uses an a background and foreground,
-// 4-bit hexadecimal color value enclosed by two at "@" characters.
-func IsWildcat(src []byte) bool {
-	const first, last = 0, 15
-	for bg := first; bg <= last; bg++ {
-		for fg := first; fg <= last; fg++ {
-			subslice := []byte(fmt.Sprintf("%s%X%X%s",
-				Wildcat.Bytes(), bg, fg, Wildcat.Bytes()))
-			if bytes.Contains(src, subslice) {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-// IsWWIVHash reports if the bytes contains WWIV BBS # (hash or pound) color codes.
-// The format uses a vertical bar "|" with the hash "#" characters
-// as a prefix with a numeric value between 0 and 9.
-func IsWWIVHash(src []byte) bool {
-	const first, last = 0, 9
-	for i := first; i <= last; i++ {
-		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
-		if bytes.Contains(src, subslice) {
-			return true
-		}
-	}
-	return false
-}
-
-// IsWWIVHeart reports if the bytes contains WWIV BBS ♥ (heart) color codes.
-// The format uses the ETX character as a prefix with a numeric value between 0 and 9.
-// In the standard MS-DOS, USA codepage (CP-437), the ETX (end-of-text)
-// character is substituted with a heart character.
-func IsWWIVHeart(src []byte) bool {
-	const first, last = 0, 9
-	for i := first; i <= last; i++ {
-		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
-		if bytes.Contains(src, subslice) {
-			return true
-		}
-	}
-	return false
-}
-
-// TrimControls removes common PCBoard BBS controls prefixes from the bytes.
-// It trims the "@CLS@" prefix used to clear the screen and the "@PAUSE@" prefix
-// used to pause the display render.
-func TrimControls(src []byte) []byte {
-	r := regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
-	return r.ReplaceAll(src, []byte(""))
-}
+// BBS codes and sequences.
+const (
+	ANSI      BBS = iota // ANSI escape sequence.
+	Celerity             // Celerity pipe.
+	PCBoard              // PCBoard @ sign.
+	Renegade             // Renegade pipe.
+	Telegard             // Telegard grave accent.
+	Wildcat              // Wildcat! @ sign.
+	WWIVHash             // WWIV # symbol.
+	WWIVHeart            // WWIV ♥ symbol.
+)
 
 // Fields splits the io.Reader around the first instance of one or more consecutive BBS color codes.
 // An error is returned if no color codes are found or if ANSI control sequences are first found.
@@ -391,7 +393,7 @@ func HTML(dst *bytes.Buffer, src io.Reader) (BBS, error) {
 	return find, find.HTML(dst, b)
 }
 
-// Bytes returns the BBS color toggle sequence as bytes.
+// Bytes returns the BBS color toggle sequence.
 func (b BBS) Bytes() []byte {
 	const (
 		etx               byte = 3  // CP437 ♥
@@ -424,8 +426,10 @@ func (b BBS) Bytes() []byte {
 }
 
 // CSS writes to dst the Cascading Style Sheets classes needed by the HTML.
-// The CSS relies on cascading variables.
-// See https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties for details.
+//
+// The CSS results rely on [custom properties] which are not supported by legacy browsers.
+//
+// [custom properties]: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties.
 func (b BBS) CSS(dst *bytes.Buffer) error {
 	if dst == nil {
 		return ErrBuff
@@ -440,7 +444,7 @@ func (b BBS) CSS(dst *bytes.Buffer) error {
 	return nil
 }
 
-// HTML writes to dst the HTML equivalent of BBS color codes with matching CSS color classes.
+// HTML writes to dst the BBS color codes as CSS color classes within HTML <i> elements.
 func (b BBS) HTML(dst *bytes.Buffer, src []byte) error {
 	if dst == nil {
 		return ErrBuff
