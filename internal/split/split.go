@@ -3,7 +3,6 @@ package split
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"html/template"
 	"regexp"
 	"strconv"
@@ -43,9 +42,9 @@ const (
 // An empty slice is returned when no valid bar code values exists.
 func VBars(src []byte) []string {
 	const sep rune = 65535
-	m := regexp.MustCompile(VBarsRe)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAll(src, []byte(repl))
+	re := regexp.MustCompile(VBarsRe)
+	repl := string(sep) + "$1"
+	res := re.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return nil
 	}
@@ -63,8 +62,8 @@ func VBars(src []byte) []string {
 
 // VBarsHTML parses the string for BBS color codes that use
 // vertical bar prefixes to apply a HTML template.
-func VBarsHTML(dst *bytes.Buffer, src []byte) error {
-	if dst == nil {
+func VBarsHTML(buf *bytes.Buffer, src []byte) error {
+	if buf == nil {
 		return ErrBuff
 	}
 	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
@@ -80,7 +79,7 @@ func VBarsHTML(dst *bytes.Buffer, src []byte) error {
 	}
 	bars := VBars(src)
 	if len(bars) == 0 {
-		_, err := dst.Write(src)
+		_, err := buf.Write(src)
 		return err
 	}
 
@@ -96,7 +95,7 @@ func VBarsHTML(dst *bytes.Buffer, src []byte) error {
 			d.Background = n
 		}
 		d.Content = color[2:]
-		if err := tmpl.Execute(dst, d); err != nil {
+		if err := tmpl.Execute(buf, d); err != nil {
 			return err
 		}
 	}
@@ -132,9 +131,9 @@ func barForeground(n int) bool {
 func Celerity(src []byte) []string {
 	// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
 	const sep rune = 65535
-	m := regexp.MustCompile(CelerityRe)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAll(src, []byte(repl))
+	re := regexp.MustCompile(CelerityRe)
+	repl := string(sep) + "$1"
+	res := re.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -152,8 +151,8 @@ func Celerity(src []byte) []string {
 
 // CelerityHTML parses the string for the unique Celerity BBS color codes
 // to apply a HTML template.
-func CelerityHTML(dst *bytes.Buffer, src []byte) error {
-	if dst == nil {
+func CelerityHTML(buf *bytes.Buffer, src []byte) error {
+	if buf == nil {
 		return ErrBuff
 	}
 	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
@@ -171,7 +170,7 @@ func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 
 	bars := Celerity(src)
 	if len(bars) == 0 {
-		_, err := dst.Write(src)
+		_, err := buf.Write(src)
 		return err
 	}
 	for _, color := range bars {
@@ -186,7 +185,7 @@ func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 			d.Background = string(color[0])
 		}
 		d.Content = color[1:]
-		if err := tmpl.Execute(dst, d); err != nil {
+		if err := tmpl.Execute(buf, d); err != nil {
 			return err
 		}
 	}
@@ -199,9 +198,9 @@ func CelerityHTML(dst *bytes.Buffer, src []byte) error {
 // An empty slice is returned when no valid @X code values exists.
 func PCBoard(src []byte) []string {
 	const sep rune = 65535
-	m := regexp.MustCompile(PCBoardRe)
-	repl := fmt.Sprintf("%s$1", string(sep))
-	res := m.ReplaceAll(src, []byte(repl))
+	re := regexp.MustCompile(PCBoardRe)
+	repl := string(sep) + "$1"
+	res := re.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -219,8 +218,8 @@ func PCBoard(src []byte) []string {
 
 // PCBoardHTML parses the string for the common PCBoard BBS color codes
 // to apply a HTML template.
-func PCBoardHTML(dst *bytes.Buffer, src []byte) error {
-	if dst == nil {
+func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
+	if buf == nil {
 		return ErrBuff
 	}
 	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
@@ -236,14 +235,14 @@ func PCBoardHTML(dst *bytes.Buffer, src []byte) error {
 	}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
-		_, err := dst.Write(src)
+		_, err := buf.Write(src)
 		return err
 	}
 	for _, color := range xcodes {
 		d.Background = strings.ToUpper(string(color[0]))
 		d.Foreground = strings.ToUpper(string(color[1]))
 		d.Content = color[2:]
-		if err := tmpl.Execute(dst, d); err != nil {
+		if err := tmpl.Execute(buf, d); err != nil {
 			return err
 		}
 	}

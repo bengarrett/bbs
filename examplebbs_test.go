@@ -12,7 +12,7 @@ func ExampleCelerityHTML() {
 	src := []byte("|cHello |C|S|wworld")
 
 	var buf bytes.Buffer
-	if err := bbs.CelerityHTML(&buf, src); err != nil {
+	if err := bbs.CelerityHTML(&buf, src...); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Print(buf.String())
@@ -89,7 +89,7 @@ func ExampleRenegadeHTML() {
 	src := []byte("|03Hello |07|19world")
 
 	var buf bytes.Buffer
-	if err := bbs.RenegadeHTML(&buf, src); err != nil {
+	if err := bbs.RenegadeHTML(&buf, src...); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Print(buf.String())
@@ -100,7 +100,7 @@ func ExamplePCBoardHTML() {
 	src := []byte("@X03Hello world")
 
 	var buf bytes.Buffer
-	if err := bbs.PCBoardHTML(&buf, src); err != nil {
+	if err := bbs.PCBoardHTML(&buf, src...); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Print(buf.String())
@@ -110,7 +110,7 @@ func ExamplePCBoardHTML() {
 func ExampleTrimControls() {
 	src := []byte("@CLS@@PAUSE@Hello world")
 
-	fmt.Printf("%q trims to %s", src, string(bbs.TrimControls(src)))
+	fmt.Printf("%q trims to %s", src, string(bbs.TrimControls(src...)))
 	// Output: "@CLS@@PAUSE@Hello world" trims to Hello world
 }
 
@@ -162,7 +162,7 @@ func ExampleBBS_CSS() {
 	}
 	// print the first 8 lines of the css
 	lines := strings.Split(css.String(), "\n")
-	for i := 0; i < 8; i++ {
+	for i := range 8 {
 		fmt.Println(lines[i])
 	}
 	// Output: @import url("text_bbs.css");
@@ -225,7 +225,7 @@ func ExampleBBS_Remove() {
 	src := []byte("@X03Hello @X07world")
 
 	var buf bytes.Buffer
-	if err := bbs.PCBoard.Remove(&buf, src); err != nil {
+	if err := bbs.PCBoard.Remove(&buf, src...); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Printf("%q to %s", src, buf.String())
@@ -238,7 +238,7 @@ func ExampleBBS_Remove_find() {
 	result := bbs.Find(bytes.NewReader(src))
 
 	var buf bytes.Buffer
-	if err := result.Remove(&buf, src); err != nil {
+	if err := result.Remove(&buf, src...); err != nil {
 		fmt.Print(err)
 	}
 	fmt.Printf("%q to %s", src, buf.String())

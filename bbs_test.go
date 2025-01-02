@@ -307,7 +307,7 @@ func Test_RenegadeHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.RenegadeHTML(&got, []byte(tt.args.s))
+			err := bbs.RenegadeHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("RenegadeHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -345,7 +345,7 @@ func Test_PCBoardHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.PCBoardHTML(&got, []byte(tt.args.s))
+			err := bbs.PCBoardHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PCBoardHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -374,7 +374,7 @@ func Test_TelegardHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.TelegardHTML(&got, []byte(tt.args.s))
+			err := bbs.TelegardHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TelegardHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -403,7 +403,7 @@ func Test_WWIVHashHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.WWIVHashHTML(&got, []byte(tt.args.s))
+			err := bbs.WWIVHashHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WWIVHashHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -432,7 +432,7 @@ func Test_WWIVHeartHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			err := bbs.WWIVHeartHTML(&got, []byte(tt.args.s))
+			err := bbs.WWIVHeartHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("WWIVHeartHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -460,7 +460,7 @@ func Test_WildcatHTML(t *testing.T) {
 	}
 	for _, tt := range tests {
 		got := bytes.Buffer{}
-		err := bbs.WildcatHTML(&got, []byte(tt.args.s))
+		err := bbs.WildcatHTML(&got, []byte(tt.args.s)...)
 		if (err != nil) != tt.wantErr {
 			t.Errorf("WildcatHTML() error = %v, wantErr %v", err, tt.wantErr)
 			return
@@ -499,7 +499,7 @@ func TestBBS_Remove(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := bytes.Buffer{}
-			if err := tt.b.Remove(&got, tt.args.src); (err != nil) != tt.wantErr {
+			if err := tt.b.Remove(&got, tt.args.src...); (err != nil) != tt.wantErr {
 				t.Errorf("BBS.Remove() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if got.String() != tt.want {
@@ -526,7 +526,7 @@ func TestTrimControls(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := bbs.TrimControls(tt.args.b); !reflect.DeepEqual(got, tt.want) {
+			if got := bbs.TrimControls(tt.args.b...); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TrimControls() = %v, want %v", got, tt.want)
 			}
 		})
@@ -535,7 +535,7 @@ func TestTrimControls(t *testing.T) {
 
 func TestCelerityHTMLNil(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
-		if err := bbs.CelerityHTML(nil, []byte{}); err == nil {
+		if err := bbs.CelerityHTML(nil, []byte{}...); err == nil {
 			t.Errorf("CelerityHTML() error = %v, wantErr %v", err, true)
 		}
 	})

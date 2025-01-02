@@ -1,3 +1,6 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/bengarrett/bbs.svg)](https://pkg.go.dev/github.com/bengarrett/bbs) &nbsp; [![Go Report Card](https://goreportcard.com/badge/github.com/bengarrett/bbs)](https://goreportcard.com/report/github.com/bengarrett/bbs)
+![Coverage](https://img.shields.io/badge/Coverage-93.0%25-brightgreen)
+
 # Package bbs
 
 Package bbs is a [Go module](https://go.dev/) that interacts with legacy textfiles encoded with
@@ -34,7 +37,7 @@ reader := transform.NewReader(file, decoder)
 
 // create the HTML equivalent of BBS color codes
 var buf bytes.Buffer
-cc, err := bbs.HTML(&buf, reader)
+match, err := bbs.HTML(&buf, reader)
 if err != nil {
     log.Print(err)
     return
@@ -42,7 +45,7 @@ if err != nil {
 
 // fetch CSS
 var css bytes.Buffer
-if err := cc.CSS(&css); err != nil {
+if err := match.CSS(&css); err != nil {
     log.Print(err)
     return
 }
