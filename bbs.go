@@ -110,13 +110,19 @@ const (
 // CelerityHTML writes to buf the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
 func CelerityHTML(buf *bytes.Buffer, src ...byte) error {
-	return split.CelerityHTML(buf, src)
+	if err := split.CelerityHTML(buf, src); err != nil {
+		return fmt.Errorf("celerity html: %w", err)
+	}
+	return nil
 }
 
 // RenegadeHTML writes to buf the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
 func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
-	return split.VBarsHTML(buf, src)
+	if err := split.VBarsHTML(buf, src); err != nil {
+		return fmt.Errorf("renegade html: %w", err)
+	}
+	return nil
 }
 
 // WildcatHTML writes to buf the HTML equivalent of Wildcat! BBS color codes with
@@ -124,7 +130,10 @@ func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
 func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
 	re := regexp.MustCompile(WildcatRe)
 	p := re.ReplaceAll(src, []byte(`@X$1$2`))
-	return split.PCBoardHTML(buf, p)
+	if err := split.PCBoardHTML(buf, p); err != nil {
+		return fmt.Errorf("wildcat html: %w", err)
+	}
+	return nil
 }
 
 // IsCelerity reports if the bytes contains Celerity BBS color codes.
@@ -237,7 +246,10 @@ func IsWildcat(src []byte) bool {
 // PCBoardHTML writes to buf the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
-	return split.PCBoardHTML(buf, src)
+	if err := split.PCBoardHTML(buf, src); err != nil {
+		return fmt.Errorf("pcboard html: %w", err)
+	}
+	return nil
 }
 
 // TelegardHTML writes to buf the HTML equivalent of Telegard BBS color codes with
@@ -245,7 +257,10 @@ func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
 func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
 	re := regexp.MustCompile(TelegardRe)
 	p := re.ReplaceAll(src, []byte(`@X$1$2`))
-	return split.PCBoardHTML(buf, p)
+	if err := split.PCBoardHTML(buf, p); err != nil {
+		return fmt.Errorf("telegard html: %w", err)
+	}
+	return nil
 }
 
 // TrimControls removes common PCBoard BBS controls prefixes from the bytes.
@@ -261,7 +276,10 @@ func TrimControls(src ...byte) []byte {
 func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 	re := regexp.MustCompile(WWIVHashRe)
 	p := re.ReplaceAll(src, []byte(`|0$1`))
-	return split.VBarsHTML(buf, p)
+	if err := split.VBarsHTML(buf, p); err != nil {
+		return fmt.Errorf("wwiv hash html: %w", err)
+	}
+	return nil
 }
 
 // WWIVHeartHTML writes to buf the HTML equivalent of WWIV BBS heart (♥) color codes with
@@ -269,7 +287,10 @@ func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 func WWIVHeartHTML(buf *bytes.Buffer, src ...byte) error {
 	re := regexp.MustCompile(WWIVHeartRe)
 	p := re.ReplaceAll(src, []byte(`|0$1`))
-	return split.VBarsHTML(buf, p)
+	if err := split.VBarsHTML(buf, p); err != nil {
+		return fmt.Errorf("wwiv heart html: %w", err)
+	}
+	return nil
 }
 
 // A BBS (Bulletin Board System) color code format,
@@ -301,7 +322,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	}
 	all, err := io.ReadAll(&buf)
 	if err != nil {
-		return nil, -none, err
+		return nil, -none, fmt.Errorf("read all: %w", err)
 	}
 	switch find {
 	case ANSI:
@@ -369,7 +390,7 @@ func HTML(buf *bytes.Buffer, src io.Reader) (BBS, error) {
 	find := Find(r)
 	p, err := io.ReadAll(&w)
 	if err != nil {
-		return -1, err
+		return -1, fmt.Errorf("read all: %w", err)
 	}
 	return find, find.HTML(buf, p)
 }
@@ -417,10 +438,10 @@ func (b BBS) CSS(buf *bytes.Buffer) error {
 	}
 	p, err := static.ReadFile("static/css/text_pcboard.css")
 	if err != nil {
-		return err
+		return fmt.Errorf("read file: %w", err)
 	}
 	if _, err = buf.Write(p); err != nil {
-		return err
+		return fmt.Errorf("write file: %w", err)
 	}
 	return nil
 }
@@ -502,8 +523,10 @@ func remove(buf *bytes.Buffer, src []byte, expr string) error {
 	}
 	re := regexp.MustCompile(expr)
 	p := re.ReplaceAll(src, []byte(""))
-	_, err := buf.Write(p)
-	return err
+	if _, err := buf.Write(p); err != nil {
+		return fmt.Errorf("write buffer: %w", err)
+	}
+	return nil
 }
 
 // String returns the BBS color format name and toggle sequence.

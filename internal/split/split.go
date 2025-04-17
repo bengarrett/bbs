@@ -3,6 +3,7 @@ package split
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"regexp"
 	"strconv"
@@ -69,13 +70,13 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse template: %w", err)
 	}
 	elm := colorInt{Foreground: 0, Background: 0, Content: ""}
 	bars := VBars(src)
 	if len(bars) == 0 {
 		_, err := buf.Write(src)
-		return err
+		return fmt.Errorf("write buffer: %w", err)
 	}
 	for _, color := range bars {
 		val, err := strconv.Atoi(color[0:2])
@@ -90,7 +91,7 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		elm.Content = color[2:]
 		if err := tmpl.Execute(buf, elm); err != nil {
-			return err
+			return fmt.Errorf("execute template: %w", err)
 		}
 	}
 	return nil
@@ -152,7 +153,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse template: %w", err)
 	}
 
 	background := false
@@ -160,7 +161,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	bars := Celerity(src)
 	if len(bars) == 0 {
 		_, err := buf.Write(src)
-		return err
+		return fmt.Errorf("write buffer: %w", err)
 	}
 	for _, color := range bars {
 		if color == swapCmd {
@@ -175,7 +176,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		elm.Content = color[1:]
 		if err := tmpl.Execute(buf, elm); err != nil {
-			return err
+			return fmt.Errorf("execute template: %w", err)
 		}
 	}
 	return nil
@@ -214,21 +215,21 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
 	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse template: %w", err)
 	}
 
 	elm := colorStr{Foreground: "", Background: "", Content: ""}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
 		_, err := buf.Write(src)
-		return err
+		return fmt.Errorf("write buffer: %w", err)
 	}
 	for _, color := range xcodes {
 		elm.Background = strings.ToUpper(string(color[0]))
 		elm.Foreground = strings.ToUpper(string(color[1]))
 		elm.Content = color[2:]
 		if err := tmpl.Execute(buf, elm); err != nil {
-			return err
+			return fmt.Errorf("execute template: %w", err)
 		}
 	}
 	return nil
