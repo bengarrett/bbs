@@ -1,28 +1,40 @@
-# gci write ./..
-# gofumpt -w .
-# golangci-lint run
-
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    # deprecated
-    - exportloopref
-    # opinionated
     - depguard
     - nlreturn
     - paralleltest
-    - varnamelen
-    - wrapcheck
     - wsl
-
-linters-settings:
-  cyclop:
-    max-complexity: 15
-
-issues:
-  exclude-rules:
-    # all test files
-    - path: '(.+)_test\.go'
-      linters:
-        - exhaustruct
-        - lll
+  settings:
+    cyclop:
+      max-complexity: 15
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - exhaustruct
+          - lll
+          - varnamelen
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

@@ -71,31 +71,25 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 	if err != nil {
 		return err
 	}
-
-	d := colorInt{
-		Foreground: 0,
-		Background: 0,
-		Content:    "",
-	}
+	elm := colorInt{Foreground: 0, Background: 0, Content: ""}
 	bars := VBars(src)
 	if len(bars) == 0 {
 		_, err := buf.Write(src)
 		return err
 	}
-
 	for _, color := range bars {
-		n, err := strconv.Atoi(color[0:2])
+		val, err := strconv.Atoi(color[0:2])
 		if err != nil {
 			continue
 		}
-		if barForeground(n) {
-			d.Foreground = n
+		if barForeground(val) {
+			elm.Foreground = val
 		}
-		if barBackground(n) {
-			d.Background = n
+		if barBackground(val) {
+			elm.Background = val
 		}
-		d.Content = color[2:]
-		if err := tmpl.Execute(buf, d); err != nil {
+		elm.Content = color[2:]
+		if err := tmpl.Execute(buf, elm); err != nil {
 			return err
 		}
 	}
@@ -162,12 +156,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	}
 
 	background := false
-	d := colorStr{
-		Foreground: "w",
-		Background: "k",
-		Content:    "",
-	}
-
+	elm := colorStr{Foreground: "w", Background: "k", Content: ""}
 	bars := Celerity(src)
 	if len(bars) == 0 {
 		_, err := buf.Write(src)
@@ -179,13 +168,13 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 			continue
 		}
 		if !background {
-			d.Foreground = string(color[0])
+			elm.Foreground = string(color[0])
 		}
 		if background {
-			d.Background = string(color[0])
+			elm.Background = string(color[0])
 		}
-		d.Content = color[1:]
-		if err := tmpl.Execute(buf, d); err != nil {
+		elm.Content = color[1:]
+		if err := tmpl.Execute(buf, elm); err != nil {
 			return err
 		}
 	}
@@ -228,21 +217,17 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		return err
 	}
 
-	d := colorStr{
-		Foreground: "",
-		Background: "",
-		Content:    "",
-	}
+	elm := colorStr{Foreground: "", Background: "", Content: ""}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
 		_, err := buf.Write(src)
 		return err
 	}
 	for _, color := range xcodes {
-		d.Background = strings.ToUpper(string(color[0]))
-		d.Foreground = strings.ToUpper(string(color[1]))
-		d.Content = color[2:]
-		if err := tmpl.Execute(buf, d); err != nil {
+		elm.Background = strings.ToUpper(string(color[0]))
+		elm.Foreground = strings.ToUpper(string(color[1]))
+		elm.Content = color[2:]
+		if err := tmpl.Execute(buf, elm); err != nil {
 			return err
 		}
 	}

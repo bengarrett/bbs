@@ -129,10 +129,10 @@ func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
 
 // IsCelerity reports if the bytes contains Celerity BBS color codes.
 // The format uses the vertical bar (|) followed by a case sensitive single alphabetic character.
-func IsCelerity(b []byte) bool {
+func IsCelerity(src []byte) bool {
 	// celerityCodes contains all the character sequences for Celerity.
 	for _, code := range []byte(celerityCodes) {
-		if bytes.Contains(b, []byte{Celerity.Bytes()[0], code}) {
+		if bytes.Contains(src, []byte{Celerity.Bytes()[0], code}) {
 			return true
 		}
 	}
@@ -141,14 +141,14 @@ func IsCelerity(b []byte) bool {
 
 // IsPCBoard reports if the bytes contains PCBoard BBS color codes.
 // The format uses an at-sign x (@X) prefix with a background and foreground, 4-bit hexadecimal color value.
-func IsPCBoard(b []byte) bool {
+func IsPCBoard(src []byte) bool {
 	const first, last = 0, 15
 	const hexxed = "%X%X"
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
 			subslice := []byte(fmt.Sprintf(hexxed, bg, fg))
 			subslice = append(PCBoard.Bytes(), subslice...)
-			if bytes.Contains(b, subslice) {
+			if bytes.Contains(src, subslice) {
 				return true
 			}
 		}
@@ -158,13 +158,13 @@ func IsPCBoard(b []byte) bool {
 
 // IsRenegade reports if the bytes contains Renegade BBS color codes.
 // The format uses the vertical bar (|) followed by a padded, numeric value between 00 and 23.
-func IsRenegade(b []byte) bool {
+func IsRenegade(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
 		subslice := []byte(fmt.Sprintf(leadingZero, i))
 		subslice = append(Renegade.Bytes(), subslice...)
-		if bytes.Contains(b, subslice) {
+		if bytes.Contains(src, subslice) {
 			return true
 		}
 	}
@@ -173,13 +173,13 @@ func IsRenegade(b []byte) bool {
 
 // IsTelegard reports if the bytes contains Telegard BBS color codes.
 // The format uses the grave accent (`) followed by a padded, numeric value between 00 and 23.
-func IsTelegard(b []byte) bool {
+func IsTelegard(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
 		subslice := []byte(fmt.Sprintf(leadingZero, i))
 		subslice = append(Telegard.Bytes(), subslice...)
-		if bytes.Contains(b, subslice) {
+		if bytes.Contains(src, subslice) {
 			return true
 		}
 	}
@@ -189,11 +189,11 @@ func IsTelegard(b []byte) bool {
 // IsWWIVHash reports if the bytes contains WWIV BBS hash color codes.
 // The format uses a vertical bar (|) with the hash (#) characters
 // as a prefix with a numeric value between 0 and 9.
-func IsWWIVHash(b []byte) bool {
+func IsWWIVHash(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
-		if bytes.Contains(b, subslice) {
+		if bytes.Contains(src, subslice) {
 			return true
 		}
 	}
@@ -206,11 +206,11 @@ func IsWWIVHash(b []byte) bool {
 // In the MS-DOS era, the common North American [CP-437 codepage] substituted the ETX character with a heart symbol.
 //
 // [CP-437 codepage]: https://en.wikipedia.org/wiki/Code_page_437
-func IsWWIVHeart(b []byte) bool {
+func IsWWIVHeart(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
 		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
-		if bytes.Contains(b, subslice) {
+		if bytes.Contains(src, subslice) {
 			return true
 		}
 	}
@@ -220,13 +220,13 @@ func IsWWIVHeart(b []byte) bool {
 // IsWildcat reports if the bytes contains Wildcat! BBS color codes.
 // The format uses an a background and foreground,
 // 4-bit hexadecimal color value enclosed with two at-sign (@) characters.
-func IsWildcat(b []byte) bool {
+func IsWildcat(src []byte) bool {
 	const first, last = 0, 15
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
 			subslice := []byte(fmt.Sprintf("%s%X%X%s",
 				Wildcat.Bytes(), bg, fg, Wildcat.Bytes()))
-			if bytes.Contains(b, subslice) {
+			if bytes.Contains(src, subslice) {
 				return true
 			}
 		}
@@ -288,30 +288,32 @@ const (
 	WWIVHeart            // WWIV ♥ symbol.
 )
 
+const none = -1
+
 // Fields splits the io.Reader around the first instance of one or more consecutive BBS color codes.
 // An error is returned if no color codes are found or if ANSI control sequences are first found.
 func Fields(src io.Reader) ([]string, BBS, error) {
 	buf := bytes.Buffer{}
 	r := io.TeeReader(src, &buf)
-	f := Find(r)
-	if !f.Valid() {
-		return nil, -1, ErrNone
+	find := Find(r)
+	if !find.Valid() {
+		return nil, none, ErrNone
 	}
-	b, err := io.ReadAll(&buf)
+	all, err := io.ReadAll(&buf)
 	if err != nil {
-		return nil, -1, err
+		return nil, -none, err
 	}
-	switch f {
+	switch find {
 	case ANSI:
-		return nil, -1, ErrANSI
+		return nil, none, ErrANSI
 	case Celerity:
-		return split.Celerity(b), f, nil
+		return split.Celerity(all), find, nil
 	case PCBoard, Telegard, Wildcat:
-		return split.PCBoard(b), f, nil
+		return split.PCBoard(all), find, nil
 	case Renegade, WWIVHash, WWIVHeart:
-		return split.VBars(b), f, nil
+		return split.VBars(all), find, nil
 	}
-	return nil, -1, ErrNone
+	return nil, none, ErrNone
 }
 
 // Find the format of any known BBS color code sequence within the reader.
@@ -319,41 +321,41 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 func Find(r io.Reader) BBS {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
-		b := scanner.Bytes()
-		p := bytes.TrimSpace(b)
-		if p == nil {
+		slice := scanner.Bytes()
+		trim := bytes.TrimSpace(slice)
+		if trim == nil {
 			continue
 		}
 		const l = len(Clear)
-		if len(p) > l {
-			if bytes.Equal(p[0:l], []byte(Clear)) {
-				b = p[l:]
+		if len(trim) > l {
+			if bytes.Equal(trim[0:l], []byte(Clear)) {
+				slice = trim[l:]
 			}
 		}
 		switch {
-		case bytes.Contains(b, ANSI.Bytes()):
+		case bytes.Contains(slice, ANSI.Bytes()):
 			return ANSI
-		case bytes.Contains(b, Celerity.Bytes()):
-			if IsRenegade(b) {
+		case bytes.Contains(slice, Celerity.Bytes()):
+			if IsRenegade(slice) {
 				return Renegade
 			}
-			if IsCelerity(b) {
+			if IsCelerity(slice) {
 				return Celerity
 			}
-			return -1
-		case IsPCBoard(b):
+			return none
+		case IsPCBoard(slice):
 			return PCBoard
-		case IsTelegard(b):
+		case IsTelegard(slice):
 			return Telegard
-		case IsWildcat(b):
+		case IsWildcat(slice):
 			return Wildcat
-		case IsWWIVHash(b):
+		case IsWWIVHash(slice):
 			return WWIVHash
-		case IsWWIVHeart(b):
+		case IsWWIVHeart(slice):
 			return WWIVHeart
 		}
 	}
-	return -1
+	return none
 }
 
 // HTML writes to buf the HTML equivalent of BBS color codes with matching CSS color classes.
@@ -428,24 +430,24 @@ func (b BBS) HTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	p := TrimControls(src...)
+	trim := TrimControls(src...)
 	switch b {
 	case ANSI:
 		return ErrANSI
 	case Celerity:
-		return CelerityHTML(buf, p...)
+		return CelerityHTML(buf, trim...)
 	case PCBoard:
-		return PCBoardHTML(buf, p...)
+		return PCBoardHTML(buf, trim...)
 	case Renegade:
-		return RenegadeHTML(buf, p...)
+		return RenegadeHTML(buf, trim...)
 	case Telegard:
-		return TelegardHTML(buf, p...)
+		return TelegardHTML(buf, trim...)
 	case Wildcat:
-		return WildcatHTML(buf, p...)
+		return WildcatHTML(buf, trim...)
 	case WWIVHash:
-		return WWIVHashHTML(buf, p...)
+		return WWIVHashHTML(buf, trim...)
 	case WWIVHeart:
-		return WWIVHeartHTML(buf, p...)
+		return WWIVHeartHTML(buf, trim...)
 	default:
 		return ErrNone
 	}
