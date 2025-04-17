@@ -75,8 +75,10 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 	elm := colorInt{Foreground: 0, Background: 0, Content: ""}
 	bars := VBars(src)
 	if len(bars) == 0 {
-		_, err := buf.Write(src)
-		return fmt.Errorf("write buffer: %w", err)
+		if _, err := buf.Write(src); err != nil {
+			return fmt.Errorf("write buffer: %w", err)
+		}
+		return nil
 	}
 	for _, color := range bars {
 		val, err := strconv.Atoi(color[0:2])
@@ -160,8 +162,10 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	elm := colorStr{Foreground: "w", Background: "k", Content: ""}
 	bars := Celerity(src)
 	if len(bars) == 0 {
-		_, err := buf.Write(src)
-		return fmt.Errorf("write buffer: %w", err)
+		if _, err := buf.Write(src); err != nil {
+			return fmt.Errorf("write buffer: %w", err)
+		}
+		return nil
 	}
 	for _, color := range bars {
 		if color == swapCmd {
@@ -221,8 +225,10 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 	elm := colorStr{Foreground: "", Background: "", Content: ""}
 	xcodes := PCBoard(src)
 	if len(xcodes) == 0 {
-		_, err := buf.Write(src)
-		return fmt.Errorf("write buffer: %w", err)
+		if _, err := buf.Write(src); err != nil {
+			return fmt.Errorf("write buffer: %w", err)
+		}
+		return nil
 	}
 	for _, color := range xcodes {
 		elm.Background = strings.ToUpper(string(color[0]))

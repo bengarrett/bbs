@@ -186,7 +186,7 @@ func IsTelegard(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
-		subslice := []byte(fmt.Sprintf(leadingZero, i))
+		subslice := fmt.Appendf(nil, leadingZero, i)
 		subslice = append(Telegard.Bytes(), subslice...)
 		if bytes.Contains(src, subslice) {
 			return true
