@@ -155,7 +155,7 @@ func IsPCBoard(src []byte) bool {
 	const hexxed = "%X%X"
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
-			subslice := []byte(fmt.Sprintf(hexxed, bg, fg))
+			subslice := fmt.Appendf(nil, hexxed, bg, fg)
 			subslice = append(PCBoard.Bytes(), subslice...)
 			if bytes.Contains(src, subslice) {
 				return true
@@ -171,7 +171,7 @@ func IsRenegade(src []byte) bool {
 	const first, last = 0, 23
 	const leadingZero = "%01d"
 	for i := first; i <= last; i++ {
-		subslice := []byte(fmt.Sprintf(leadingZero, i))
+		subslice := fmt.Appendf(nil, leadingZero, i)
 		subslice = append(Renegade.Bytes(), subslice...)
 		if bytes.Contains(src, subslice) {
 			return true
@@ -227,14 +227,14 @@ func IsWWIVHeart(src []byte) bool {
 }
 
 // IsWildcat reports if the bytes contains Wildcat! BBS color codes.
-// The format uses an a background and foreground,
+// The format uses a background and foreground,
 // 4-bit hexadecimal color value enclosed with two at-sign (@) characters.
 func IsWildcat(src []byte) bool {
 	const first, last = 0, 15
+	const format = "%s%X%X%s"
 	for bg := first; bg <= last; bg++ {
 		for fg := first; fg <= last; fg++ {
-			subslice := []byte(fmt.Sprintf("%s%X%X%s",
-				Wildcat.Bytes(), bg, fg, Wildcat.Bytes()))
+			subslice := fmt.Appendf(nil, format, Wildcat.Bytes(), bg, fg, Wildcat.Bytes())
 			if bytes.Contains(src, subslice) {
 				return true
 			}

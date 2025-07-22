@@ -148,7 +148,7 @@ func Test_IsCelerity(t *testing.T) {
 	}
 }
 
-func Test_findRenegade(t *testing.T) {
+func Test_IsRenegade(t *testing.T) {
 	type args struct {
 		b []byte
 	}

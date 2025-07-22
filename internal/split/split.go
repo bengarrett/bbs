@@ -1,3 +1,5 @@
+// Package split interacts with the source bytes, disassembling the
+// source encodings into a slice for additional parsing.
 package split
 
 import (
@@ -68,7 +70,7 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 		return ErrBuff
 	}
 	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
+	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
 	if err != nil {
 		return fmt.Errorf("parse template: %w", err)
 	}
@@ -153,7 +155,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 		return ErrBuff
 	}
 	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
+	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
 	if err != nil {
 		return fmt.Errorf("parse template: %w", err)
 	}
@@ -217,7 +219,7 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		return ErrBuff
 	}
 	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idomatic").Parse(idiomaticTpl)
+	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
 	if err != nil {
 		return fmt.Errorf("parse template: %w", err)
 	}
