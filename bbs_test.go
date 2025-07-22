@@ -98,7 +98,7 @@ func TestBBS_HTML(t *testing.T) {
 	}{
 		{"empty", -1, args{}, "", true},
 		{"plaintext", -1, args{"text"}, "", true},
-		{"plaintext", bbs.ANSI, args{"\x27\x91text"}, "", true},
+		{"encodedtext", bbs.ANSI, args{"\x27\x91text"}, "", true},
 		{
 			"celerity", bbs.Celerity,
 			args{"|S|gHello|Rworld"},

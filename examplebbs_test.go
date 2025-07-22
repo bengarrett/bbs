@@ -171,7 +171,7 @@ func ExampleBBS_CSS() {
 	// /* PCBoard and WildCat! BBS colours */
 	//
 	// i.PF0 {
-	//     color: var(--black);
+	//   color: var(--black);
 	// }
 }
 
