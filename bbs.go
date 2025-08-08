@@ -141,7 +141,11 @@ func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
 func IsCelerity(src []byte) bool {
 	// celerityCodes contains all the character sequences for Celerity.
 	for _, code := range []byte(celerityCodes) {
-		if bytes.Contains(src, []byte{Celerity.Bytes()[0], code}) {
+		seq := Celerity.Bytes()
+		if len(seq) < 1 {
+			continue
+		}
+		if bytes.Contains(src, []byte{seq[0], code}) {
 			return true
 		}
 	}
