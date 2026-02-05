@@ -12,7 +12,33 @@ import (
 	"strings"
 )
 
+const (
+	// CelerityRe is a regular expression to match Celerity BBS color codes.
+	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
+
+	// PCBoardRe is a case-insensitive, regular expression to match PCBoard BBS color codes.
+	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
+
+	// VBarsRe is a regular expression to match Renegade BBS color codes.
+	VBarsRe string = `\|(0[0-9]|1[1-9]|2[0-3])`
+
+	minColorLength     = 2
+	preallocationRatio = 2
+	vbarsTpl           = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
+	celerityTpl        = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
+	pcboardTpl         = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
+)
+
 var ErrBuff = errors.New("bytes buffer cannot be nil")
+
+// Pre-compiled HTML templates for performance.
+//
+//nolint:gochecknoglobals
+var (
+	vbarsTemplate    = template.Must(template.New("vbars").Parse(vbarsTpl))
+	celerityTemplate = template.Must(template.New("celerity").Parse(celerityTpl))
+	pcboardTemplate  = template.Must(template.New("pcboard").Parse(pcboardTpl))
+)
 
 // colorInt template data for integer based color codes.
 type colorInt struct {
@@ -28,17 +54,6 @@ type colorStr struct {
 	Content    string
 }
 
-const (
-	// CelerityRe is a regular expression to match Celerity BBS color codes.
-	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
-
-	// PCBoardRe is a case-insensitive, regular expression to match PCBoard BBS color codes.
-	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
-
-	// VBarsRe is a regular expression to match Renegade BBS color codes.
-	VBarsRe string = `\|(0[0-9]|1[1-9]|2[0-3])`
-)
-
 // VBars slices a string into substrings separated by "|" vertical bar codes.
 // The first two bytes of each substring will contain a colour value.
 // Vertical bar codes are used by Renegade, WWIV hash and WWIV heart formats.
@@ -53,7 +68,7 @@ func VBars(src []byte) []string {
 	}
 
 	spl := bytes.Split(res, []byte(string(sep)))
-	app := []string{}
+	app := make([]string, 0, len(spl)/preallocationRatio)
 	for _, val := range spl {
 		if len(val) == 0 {
 			continue
@@ -69,11 +84,6 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	const idiomaticTpl = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return fmt.Errorf("parse template: %w", err)
-	}
 	elm := colorInt{Foreground: 0, Background: 0, Content: ""}
 	bars := VBars(src)
 	if len(bars) == 0 {
@@ -83,6 +93,9 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 		return nil
 	}
 	for _, color := range bars {
+		if len(color) < minColorLength {
+			continue
+		}
 		val, err := strconv.Atoi(color[0:2])
 		if err != nil {
 			continue
@@ -94,7 +107,7 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 			elm.Background = val
 		}
 		elm.Content = color[2:]
-		if err := tmpl.Execute(buf, elm); err != nil {
+		if err := vbarsTemplate.Execute(buf, elm); err != nil {
 			return fmt.Errorf("execute template: %w", err)
 		}
 	}
@@ -138,7 +151,7 @@ func Celerity(src []byte) []string {
 	}
 
 	spl := bytes.Split(res, []byte(string(sep)))
-	clean := []string{}
+	clean := make([]string, 0, len(spl)/preallocationRatio)
 	for _, val := range spl {
 		if len(val) == 0 {
 			continue
@@ -154,11 +167,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	const idiomaticTpl, swapCmd = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`, "S"
-	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return fmt.Errorf("parse template: %w", err)
-	}
+	const swapCmd = "S"
 
 	background := false
 	elm := colorStr{Foreground: "w", Background: "k", Content: ""}
@@ -174,6 +183,9 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 			background = !background
 			continue
 		}
+		if len(color) < 1 {
+			continue
+		}
 		if !background {
 			elm.Foreground = string(color[0])
 		}
@@ -181,7 +193,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 			elm.Background = string(color[0])
 		}
 		elm.Content = color[1:]
-		if err := tmpl.Execute(buf, elm); err != nil {
+		if err := celerityTemplate.Execute(buf, elm); err != nil {
 			return fmt.Errorf("execute template: %w", err)
 		}
 	}
@@ -202,7 +214,7 @@ func PCBoard(src []byte) []string {
 	}
 
 	spl := bytes.Split(res, []byte(string(sep)))
-	clean := []string{}
+	clean := make([]string, 0, len(spl)/preallocationRatio)
 	for _, val := range spl {
 		if len(val) == 0 {
 			continue
@@ -218,11 +230,6 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	const idiomaticTpl = `<i class="PB{{.Background}} PF{{.Foreground}}">{{.Content}}</i>`
-	tmpl, err := template.New("idiomatic").Parse(idiomaticTpl)
-	if err != nil {
-		return fmt.Errorf("parse template: %w", err)
-	}
 
 	elm := colorStr{Foreground: "", Background: "", Content: ""}
 	xcodes := PCBoard(src)
@@ -233,10 +240,13 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		return nil
 	}
 	for _, color := range xcodes {
+		if len(color) < minColorLength {
+			continue
+		}
 		elm.Background = strings.ToUpper(string(color[0]))
 		elm.Foreground = strings.ToUpper(string(color[1]))
 		elm.Content = color[2:]
-		if err := tmpl.Execute(buf, elm); err != nil {
+		if err := pcboardTemplate.Execute(buf, elm); err != nil {
 			return fmt.Errorf("execute template: %w", err)
 		}
 	}

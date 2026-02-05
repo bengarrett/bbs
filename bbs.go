@@ -100,6 +100,14 @@ const (
 	WWIVHeartRe string = `\x03(\d)`                              // matches WWIV with hearts ♥
 )
 
+// Pre-compiled regular expressions for performance.
+var (
+	telegardRegex     = regexp.MustCompile(TelegardRe)
+	trimControlsRegex = regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
+	wwivHashRegex     = regexp.MustCompile(WWIVHashRe)
+	wwivHeartRegex    = regexp.MustCompile(WWIVHeartRe)
+)
+
 // Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
 const (
 	Clear string = "@CLS@"
@@ -140,11 +148,11 @@ func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
 // The format uses the vertical bar (|) followed by a case sensitive single alphabetic character.
 func IsCelerity(src []byte) bool {
 	// celerityCodes contains all the character sequences for Celerity.
+	seq := Celerity.Bytes()
+	if len(seq) < 1 {
+		return false
+	}
 	for _, code := range []byte(celerityCodes) {
-		seq := Celerity.Bytes()
-		if len(seq) < 1 {
-			continue
-		}
 		if bytes.Contains(src, []byte{seq[0], code}) {
 			return true
 		}
@@ -205,7 +213,7 @@ func IsTelegard(src []byte) bool {
 func IsWWIVHash(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
-		subslice := append(WWIVHash.Bytes(), []byte(strconv.Itoa(i))...)
+		subslice := append(WWIVHash.Bytes(), strconv.Itoa(i)...)
 		if bytes.Contains(src, subslice) {
 			return true
 		}
@@ -222,7 +230,7 @@ func IsWWIVHash(src []byte) bool {
 func IsWWIVHeart(src []byte) bool {
 	const first, last = 0, 9
 	for i := first; i <= last; i++ {
-		subslice := append(WWIVHeart.Bytes(), []byte(strconv.Itoa(i))...)
+		subslice := append(WWIVHeart.Bytes(), strconv.Itoa(i)...)
 		if bytes.Contains(src, subslice) {
 			return true
 		}
@@ -259,8 +267,7 @@ func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
 // TelegardHTML writes to buf the HTML equivalent of Telegard BBS color codes with
 // matching CSS color classes.
 func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
-	re := regexp.MustCompile(TelegardRe)
-	p := re.ReplaceAll(src, []byte(`@X$1$2`))
+	p := telegardRegex.ReplaceAll(src, []byte(`@X$1$2`))
 	if err := split.PCBoardHTML(buf, p); err != nil {
 		return fmt.Errorf("telegard html: %w", err)
 	}
@@ -271,15 +278,13 @@ func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
 // It trims the @CLS@ prefix used to clear the screen and the @PAUSE@ prefix
 // used to pause the display render.
 func TrimControls(src ...byte) []byte {
-	re := regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
-	return re.ReplaceAll(src, []byte(""))
+	return trimControlsRegex.ReplaceAll(src, []byte(""))
 }
 
 // WWIVHashHTML writes to buf the HTML equivalent of WWIV BBS hash (#) color codes with
 // matching CSS color classes.
 func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
-	re := regexp.MustCompile(WWIVHashRe)
-	p := re.ReplaceAll(src, []byte(`|0$1`))
+	p := wwivHashRegex.ReplaceAll(src, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv hash html: %w", err)
 	}
@@ -289,8 +294,7 @@ func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 // WWIVHeartHTML writes to buf the HTML equivalent of WWIV BBS heart (♥) color codes with
 // matching CSS color classes.
 func WWIVHeartHTML(buf *bytes.Buffer, src ...byte) error {
-	re := regexp.MustCompile(WWIVHeartRe)
-	p := re.ReplaceAll(src, []byte(`|0$1`))
+	p := wwivHeartRegex.ReplaceAll(src, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv heart html: %w", err)
 	}
@@ -326,7 +330,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	}
 	all, err := io.ReadAll(&buf)
 	if err != nil {
-		return nil, -none, fmt.Errorf("read all: %w", err)
+		return nil, none, fmt.Errorf("read all: %w", err)
 	}
 	switch find {
 	case ANSI:
