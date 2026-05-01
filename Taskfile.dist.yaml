@@ -6,15 +6,15 @@
 # To see all available tasks:
 # $ task --list
 #
-version: "3"
+version: '3'
 tasks:
   default:
-    desc: "Task runner for the bbs package."
+    desc: 'Task runner for the bbs package.'
     cmds:
       - task --list-all
     silent: true
   doc:
-    desc: "Generate and browse the application module documentation."
+    desc: 'Generate and browse the application module documentation.'
     cmds:
       - cmd: pkgsite -http localhost:8090
     silent: true
@@ -25,15 +25,17 @@ tasks:
     cmds:
       - cmd: clear
         platforms: [linux, darwin, freebsd]
+      - cmd: gci write ./..
+      - cmd: go fix ./...
       - cmd: gofumpt -l -w .
       - cmd: golangci-lint run -c .golangci.yaml
   nil:
-    desc: "Run the static analysis techniques to catch Nil dereferences."
+    desc: 'Run the static analysis techniques to catch Nil dereferences.'
     cmds:
       - go tool nilaway -test=false ./...
   pkg-patch:
     aliases:
-      - "patch"
+      - 'patch'
     silent: false
     desc: Update and apply patches to the web server dependencies.
     cmds:
@@ -42,7 +44,7 @@ tasks:
       - cmd: go mod tidy
   pkg-update:
     aliases:
-      - "update"
+      - 'update'
     silent: false
     desc: Update the web server dependencies.
     cmds:
@@ -50,10 +52,10 @@ tasks:
       - cmd: go mod verify
       - cmd: go mod tidy
   test:
-    desc: "Run the test suite."
+    desc: 'Run the test suite.'
     cmds:
       - go test -count 1 ./...
   testr:
-    desc: "Run the test suite with the slower race detection."
+    desc: 'Run the test suite with the slower race detection.'
     cmds:
       - go test -count 1 -race ./...
