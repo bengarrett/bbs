@@ -303,6 +303,11 @@ func Test_RenegadeHTML(t *testing.T) {
 			args{"|07White\n|20Red Background"},
 			"<i class=\"P0 P7\">White\n</i><i class=\"P20 P7\">Red Background</i>", false,
 		},
+		{
+			"sliced?",
+			args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"},
+			"", false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -313,7 +318,7 @@ func Test_RenegadeHTML(t *testing.T) {
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("RenegadeHTML() = %v, want %v", got, tt.want)
+				t.Errorf("RenegadeHTML() = %v, want %v", got.String(), tt.want)
 			}
 		})
 	}

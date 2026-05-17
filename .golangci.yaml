@@ -1,7 +1,8 @@
-version: "2"
+version: '2'
 linters:
   default: all
   disable:
+    - gomodguard
     - depguard
     - nlreturn
     - noinlineerr
@@ -20,6 +21,7 @@ linters:
       - std-error-handling
     rules:
       - linters:
+          - goconst
           - exhaustruct
           - lll
           - varnamelen

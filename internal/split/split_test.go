@@ -24,11 +24,13 @@ func Test_VBars(t *testing.T) {
 		{"out of range", args{"|24"}, 0},
 		{"incomplete", args{"|2"}, 0},
 		{"multiples", args{"|01Hello|00 |10world"}, 2},
+		{"", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, 0},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := len(split.VBars([]byte(tt.args.s))); got != tt.want {
-				fmt.Fprintln(os.Stderr, split.VBars([]byte(tt.args.s)))
+			src := []byte(tt.args.s)
+			if got := len(split.VBars(src)); got != tt.want {
+				fmt.Fprintln(os.Stderr, split.VBars(src))
 				t.Errorf("VBars() = %v, want %v", got, tt.want)
 			}
 		})
@@ -129,6 +131,35 @@ func Test_CelerityHTML(t *testing.T) {
 			}
 			if got.String() != tt.want {
 				t.Errorf("CelerityHTML() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_VBarsHTML(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{"empty", args{}, "", false},
+		{"x", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, "", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := bytes.Buffer{}
+			src := []byte(tt.args.s)
+			err := split.VBarsHTML(&got, src)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("VBarsHTML() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got.String() != tt.want {
+				t.Errorf("VBarsHTML() = %s, want %v", got.String(), tt.want)
 			}
 		})
 	}
