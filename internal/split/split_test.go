@@ -31,7 +31,7 @@ func Test_VBars(t *testing.T) {
 			src := []byte(tt.args.s)
 			if got := len(split.VBars(src)); got != tt.want {
 				fmt.Fprintln(os.Stderr, split.VBars(src))
-				t.Errorf("VBars() = %v, want %v", got, tt.want)
+				t.Errorf("VBars() %q = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -58,7 +58,7 @@ func Test_Celerity(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := len(split.Celerity([]byte(tt.args.s))); got != tt.want {
 				fmt.Fprintln(os.Stderr, split.Celerity([]byte(tt.args.s)))
-				t.Errorf("Celerity() = %v, want %v", got, tt.want)
+				t.Errorf("Celerity()%q = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -84,7 +84,7 @@ func Test_PCBoard(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := len(split.PCBoard([]byte(tt.args.s))); got != tt.want {
 				fmt.Fprintln(os.Stderr, split.PCBoard([]byte(tt.args.s)))
-				t.Errorf("PCBoard() = %v, want %v", got, tt.want)
+				t.Errorf("PCBoard()%s = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -102,21 +102,25 @@ func Test_CelerityHTML(t *testing.T) {
 	}{
 		{"empty", args{}, "", false},
 		{"string", args{"the quick brown fox"}, "the quick brown fox", false},
-		{"prefix", args{"|kHello world"}, "<i class=\"PBk PFk\">Hello world</i>", false},
+		{
+			"prefix",
+			args{"|kHello world"},
+			`<i class="PBk PFk">Hello world</i>`, false,
+		},
 		{
 			"background",
 			args{"|S|bHello world"},
-			"<i class=\"PBb PFw\">Hello world</i>", false,
+			`<i class="PBb PFw">Hello world</i>`, false,
 		},
 		{
 			"multi",
 			args{"|S|gHello|Rworld"},
-			"<i class=\"PBg PFw\">Hello</i><i class=\"PBR PFw\">world</i>", false,
+			`<i class="PBg PFw">Hello</i><i class="PBR PFw">world</i>`, false,
 		},
 		{
 			"newline",
 			args{"|S|gHello\n|Rworld"},
-			"<i class=\"PBg PFw\">Hello\n</i><i class=\"PBR PFw\">world</i>", false,
+			`<i class="PBg PFw">Hello` + "\n" + `</i><i class="PBR PFw">world</i>`, false,
 		},
 		{"false positive", args{"| Hello world |"}, "| Hello world |", false},
 		{"double bar", args{"||pipes"}, "||pipes", false},
@@ -126,11 +130,11 @@ func Test_CelerityHTML(t *testing.T) {
 			got := bytes.Buffer{}
 			err := split.CelerityHTML(&got, []byte(tt.args.s))
 			if (err != nil) != tt.wantErr {
-				t.Errorf("CelerityHTML() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("CelerityHTML() %q error = %v, wantErr %v", tt.name, err, tt.wantErr)
 				return
 			}
-			if got.String() != tt.want {
-				t.Errorf("CelerityHTML() = %v, want %v", got, tt.want)
+			if s := got.String(); s != tt.want {
+				t.Errorf("CelerityHTML() %q = %v, want %v", tt.name, s, tt.want)
 			}
 		})
 	}
@@ -155,11 +159,11 @@ func Test_VBarsHTML(t *testing.T) {
 			src := []byte(tt.args.s)
 			err := split.VBarsHTML(&got, src)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("VBarsHTML() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("VBarsHTML() %q error = %v, wantErr %v", tt.name, err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("VBarsHTML() = %s, want %v", got.String(), tt.want)
+				t.Errorf("VBarsHTML() %q = %s, want %v", tt.name, got.String(), tt.want)
 			}
 		})
 	}

@@ -384,6 +384,7 @@ func Find(r io.Reader) BBS {
 			return WWIVHeart
 		}
 	}
+	_ = scanner.Err() // any scan errors can be ignored
 	return none
 }
 
@@ -444,7 +445,8 @@ func (b BBS) CSS(buf *bytes.Buffer) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	p, err := static.ReadFile("static/css/text_pcboard.css")
+	const name = "static/css/text_pcboard.css"
+	p, err := static.ReadFile(name)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}

@@ -27,7 +27,7 @@ func TestBBS_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.String(); got != tt.want {
-				t.Errorf("BBS.String() = %v, want %v", got, tt.want)
+				t.Errorf("BBS.String() %q = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -47,7 +47,7 @@ func TestBBS_Name(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.Name(); got != tt.want {
-				t.Errorf("BBS.Name() = %v, want %v", got, tt.want)
+				t.Errorf("BBS.Name()%q = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -79,7 +79,7 @@ func TestFind(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			r := strings.NewReader(tt.args.s)
 			if got := bbs.Find(r); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Find() = %d, want %d", got, tt.want)
+				t.Errorf("Find() %q = %d, want %d", tt.name, got, tt.want)
 			}
 		})
 	}
@@ -102,12 +102,13 @@ func TestBBS_HTML(t *testing.T) {
 		{
 			"celerity", bbs.Celerity,
 			args{"|S|gHello|Rworld"},
-			"<i class=\"PBg PFw\">Hello</i><i class=\"PBR PFw\">world</i>", false,
+			`<i class="PBg PFw">Hello</i><i class="PBR PFw">world</i>`, false,
 		},
 		{
 			"xss", bbs.Celerity,
 			args{"|S|gABC<script>alert('xss');</script>D|REF"},
-			"<i class=\"PBg PFw\">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i><i class=\"PBR PFw\">EF</i>", false,
+			`<i class="PBg PFw">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i>` +
+				`<i class="PBR PFw">EF</i>`, false,
 		},
 	}
 	for _, tt := range tests {
@@ -296,12 +297,12 @@ func Test_RenegadeHTML(t *testing.T) {
 		{
 			"multi",
 			args{"|" + black + white + "White |" + red + "Red Background"},
-			"<i class=\"P0 P7\">White </i><i class=\"P20 P7\">Red Background</i>", false,
+			`<i class="P0 P7">White </i><i class="P20 P7">Red Background</i>`, false,
 		},
 		{
 			"newline",
 			args{"|07White\n|20Red Background"},
-			"<i class=\"P0 P7\">White\n</i><i class=\"P20 P7\">Red Background</i>", false,
+			`<i class="P0 P7">White` + "\n" + `</i><i class="P20 P7">Red Background</i>`, false,
 		},
 		{
 			"sliced?",
@@ -314,11 +315,11 @@ func Test_RenegadeHTML(t *testing.T) {
 			got := bytes.Buffer{}
 			err := bbs.RenegadeHTML(&got, []byte(tt.args.s)...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RenegadeHTML() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RenegadeHTML() %q error = %v, wantErr %v", tt.name, err, tt.wantErr)
 				return
 			}
 			if got.String() != tt.want {
-				t.Errorf("RenegadeHTML() = %v, want %v", got.String(), tt.want)
+				t.Errorf("RenegadeHTML() %q = %v, want %v", tt.name, got.String(), tt.want)
 			}
 		})
 	}
@@ -336,16 +337,56 @@ func Test_PCBoardHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{""}, "", false},
-		{"string", args{"hello world"}, "hello world", false},
-		{"prefix", args{"@X07Hello world"}, "<i class=\"PB0 PF7\">Hello world</i>", false},
-		{"casing", args{"@xaBHello world"}, "<i class=\"PBA PFB\">Hello world</i>", false},
-		{"multi", args{"@X07Hello @X11world"}, "<i class=\"PB0 PF7\">Hello </i><i class=\"PB1 PF1\">world</i>", false},
-		{"newline", args{"@X07Hello\n@X11world"}, "<i class=\"PB0 PF7\">Hello\n</i><i class=\"PB1 PF1\">world</i>", false},
-		{"false pos 0", args{"@X code for PCBoard"}, "@X code for PCBoard", false},
-		{"false pos 1", args{"PCBoard @X code"}, "PCBoard @X code", false},
-		{"false pos 2", args{"PCBoard @Xcode"}, "PCBoard @Xcode", false},
-		{"false pos 3", args{"Does PCBoard @X code offer a red @X?"}, "Does PCBoard @X code offer a red @X?", false},
-		{"combo", args{"@X07@Xcodes combo"}, "<i class=\"PB0 PF7\">@Xcodes combo</i>", false},
+		{
+			"string",
+			args{"hello world"},
+			"hello world", false,
+		},
+		{
+			"prefix",
+			args{"@X07Hello world"},
+			`<i class="PB0 PF7">Hello world</i>`, false,
+		},
+		{
+			"casing",
+			args{"@xaBHello world"},
+			`<i class="PBA PFB">Hello world</i>`, false,
+		},
+		{
+			"multi",
+			args{"@X07Hello @X11world"},
+			`<i class="PB0 PF7">Hello </i><i class="PB1 PF1">world</i>`, false,
+		},
+		{
+			"newline",
+			args{"@X07Hello\n@X11world"},
+			`<i class="PB0 PF7">Hello` + "\n" + `</i><i class="PB1 PF1">world</i>`, false,
+		},
+		{
+			"false pos 0",
+			args{"@X code for PCBoard"},
+			"@X code for PCBoard", false,
+		},
+		{
+			"false pos 1",
+			args{"PCBoard @X code"},
+			"PCBoard @X code", false,
+		},
+		{
+			"false pos 2",
+			args{"PCBoard @Xcode"},
+			"PCBoard @Xcode", false,
+		},
+		{
+			"false pos 3",
+			args{"Does PCBoard @X code offer a red @X?"},
+			"Does PCBoard @X code offer a red @X?", false,
+		},
+		{
+			"combo",
+			args{"@X07@Xcodes combo"},
+			`<i class="PB0 PF7">@Xcodes combo</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -355,8 +396,8 @@ func Test_PCBoardHTML(t *testing.T) {
 				t.Errorf("PCBoardHTML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if got.String() != tt.want {
-				t.Errorf("PCBoardHTML() = %v, want %v", got, tt.want)
+			if s := got.String(); s != tt.want {
+				t.Errorf("PCBoardHTML() %q = %s, want %s", tt.name, s, tt.want)
 			}
 		})
 	}
@@ -373,8 +414,16 @@ func Test_TelegardHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{""}, "", false},
-		{"string", args{"hello world"}, "hello world", false},
-		{"prefix", args{"`07Hello world"}, "<i class=\"PB0 PF7\">Hello world</i>", false},
+		{
+			"string",
+			args{"hello world"},
+			"hello world", false,
+		},
+		{
+			"prefix",
+			args{"`07Hello world"},
+			`<i class="PB0 PF7">Hello world</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -402,8 +451,16 @@ func Test_WWIVHashHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{}, "", false},
-		{"string", args{"hello world"}, "hello world", false},
-		{"prefix", args{"|#7Hello world"}, "<i class=\"P0 P7\">Hello world</i>", false},
+		{
+			"string",
+			args{"hello world"},
+			"hello world", false,
+		},
+		{
+			"prefix",
+			args{"|#7Hello world"},
+			`<i class="P0 P7">Hello world</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -431,8 +488,16 @@ func Test_WWIVHeartHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{}, "", false},
-		{"string", args{"hello world"}, "hello world", false},
-		{"prefix", args{"\x037Hello world"}, "<i class=\"P0 P7\">Hello world</i>", false},
+		{
+			"string",
+			args{"hello world"},
+			"hello world", false,
+		},
+		{
+			"prefix",
+			args{"\x037Hello world"},
+			`<i class="P0 P7">Hello world</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -460,8 +525,16 @@ func Test_WildcatHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{}, "", false},
-		{"string", args{"hello world"}, "hello world", false},
-		{"prefix", args{"@0F@Hello world"}, "<i class=\"PB0 PFF\">Hello world</i>", false},
+		{
+			"string",
+			args{"hello world"},
+			"hello world", false,
+		},
+		{
+			"prefix",
+			args{"@0F@Hello world"},
+			`<i class="PB0 PFF">Hello world</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		got := bytes.Buffer{}

@@ -67,9 +67,9 @@ func VBars(src []byte) []string {
 		return nil
 	}
 
-	spl := bytes.Split(res, []byte(string(sep)))
-	app := make([]string, 0, len(spl)/preallocationRatio)
-	for _, val := range spl {
+	split := bytes.Split(res, []byte(string(sep)))
+	app := make([]string, 0, len(split)/preallocationRatio)
+	for _, val := range split {
 		if len(val) == 0 {
 			continue
 		}
@@ -96,15 +96,15 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 		if len(color) < minColorLength {
 			continue
 		}
-		val, err := strconv.Atoi(color[0:2])
+		colr, err := strconv.Atoi(color[0:2])
 		if err != nil {
 			continue
 		}
-		if barForeground(val) {
-			elm.Foreground = val
+		if barForeground(colr) {
+			elm.Foreground = colr
 		}
-		if barBackground(val) {
-			elm.Background = val
+		if barBackground(colr) {
+			elm.Background = colr
 		}
 		elm.Content = color[2:]
 		if err := vbarsTemplate.Execute(buf, elm); err != nil {
@@ -150,9 +150,9 @@ func Celerity(src []byte) []string {
 		return []string{}
 	}
 
-	spl := bytes.Split(res, []byte(string(sep)))
-	clean := make([]string, 0, len(spl)/preallocationRatio)
-	for _, val := range spl {
+	split := bytes.Split(res, []byte(string(sep)))
+	clean := make([]string, 0, len(split)/preallocationRatio)
+	for _, val := range split {
 		if len(val) == 0 {
 			continue
 		}
@@ -171,14 +171,14 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 
 	background := false
 	elm := colorStr{Foreground: "w", Background: "k", Content: ""}
-	bars := Celerity(src)
-	if len(bars) == 0 {
+	colors := Celerity(src)
+	if len(colors) == 0 {
 		if _, err := buf.Write(src); err != nil {
 			return fmt.Errorf("write buffer: %w", err)
 		}
 		return nil
 	}
-	for _, color := range bars {
+	for _, color := range colors {
 		if color == swapCmd {
 			background = !background
 			continue
@@ -213,9 +213,9 @@ func PCBoard(src []byte) []string {
 		return []string{}
 	}
 
-	spl := bytes.Split(res, []byte(string(sep)))
-	clean := make([]string, 0, len(spl)/preallocationRatio)
-	for _, val := range spl {
+	split := bytes.Split(res, []byte(string(sep)))
+	clean := make([]string, 0, len(split)/preallocationRatio)
+	for _, val := range split {
 		if len(val) == 0 {
 			continue
 		}

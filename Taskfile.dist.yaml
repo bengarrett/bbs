@@ -26,6 +26,7 @@ tasks:
       - cmd: clear
         platforms: [linux, darwin, freebsd]
       - cmd: gci write ./..
+        platforms: [linux]
       - cmd: go fix ./...
       - cmd: gofumpt -l -w .
       - cmd: golangci-lint run -c .golangci.yaml
