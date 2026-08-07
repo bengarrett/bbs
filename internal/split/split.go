@@ -80,7 +80,29 @@ func VBars(src []byte) []string {
 
 // VBarsHTML parses the string for BBS color codes that use
 // vertical bar prefixes to apply a HTML template.
+//
+// An error gets returned if an invalid color code value is discovered.
 func VBarsHTML(buf *bytes.Buffer, src []byte) error {
+	if buf == nil {
+		return ErrBuff
+	}
+	return vBarsHTML(buf, true, src...)
+}
+
+// VBarsHTMLF parses the string for BBS color codes that use
+// vertical bar prefixes to apply a HTML template.
+//
+// If an invalid color code value is discovered, it is skipped and
+// the HTML rendering is continued. However, this will lead to
+// false-positive renderings.
+func VBarsHTMLF(buf *bytes.Buffer, src []byte) error {
+	if buf == nil {
+		return ErrBuff
+	}
+	return vBarsHTML(buf, false, src...)
+}
+
+func vBarsHTML(buf *bytes.Buffer, strict bool, src ...byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
@@ -92,12 +114,15 @@ func VBarsHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	for _, color := range bars {
+	for bar, color := range bars {
 		if len(color) < minColorLength {
 			continue
 		}
 		colr, err := strconv.Atoi(color[0:2])
 		if err != nil {
+			if strict {
+				return fmt.Errorf("bar #%d is not a bbs code: %w", bar, err)
+			}
 			continue
 		}
 		if barForeground(colr) {

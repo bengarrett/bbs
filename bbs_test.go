@@ -307,7 +307,7 @@ func Test_RenegadeHTML(t *testing.T) {
 		{
 			"sliced?",
 			args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"},
-			"", false,
+			"", true,
 		},
 	}
 	for _, tt := range tests {

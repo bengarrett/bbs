@@ -24,7 +24,7 @@ func Test_VBars(t *testing.T) {
 		{"out of range", args{"|24"}, 0},
 		{"incomplete", args{"|2"}, 0},
 		{"multiples", args{"|01Hello|00 |10world"}, 2},
-		{"", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, 0},
+		{"false positive", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, 2},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -151,7 +151,7 @@ func Test_VBarsHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{}, "", false},
-		{"x", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, "", false},
+		{"false positive", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

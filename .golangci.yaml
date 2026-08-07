@@ -23,6 +23,7 @@ linters:
       - linters:
           - goconst
           - exhaustruct
+          - funlen
           - lll
           - varnamelen
         path: (.+)_test\.go
