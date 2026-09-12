@@ -2,16 +2,15 @@ version: '2'
 linters:
   default: all
   disable:
-    - gomodguard
-    - depguard
+    - exhaustruct_v5
     - nlreturn
     - noinlineerr
     - paralleltest
-    - wsl
     - wsl_v5
-  settings:
-    cyclop:
-      max-complexity: 15
+    # retired
+    - exhaustruct
+    - gomodguard
+    - wsl
   exclusions:
     generated: lax
     presets:
@@ -31,6 +30,17 @@ linters:
       - third_party$
       - builtin$
       - examples$
+  settings:
+    cyclop:
+      max-complexity: 15
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - 'golang.org/x/text'
+            - 'github.com/nalgeon/be'
+            - 'github.com/bengarrett/bbs'
 formatters:
   enable:
     - gci

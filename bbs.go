@@ -102,18 +102,22 @@ const (
 
 // Pre-compiled regular expressions for performance.
 var (
-	telegardRegex     = regexp.MustCompile(TelegardRe)
-	trimControlsRegex = regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
-	wwivHashRegex     = regexp.MustCompile(WWIVHashRe)
-	wwivHeartRegex    = regexp.MustCompile(WWIVHeartRe)
+	trimControlsRe = regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
+	celerityRe     = regexp.MustCompile(CelerityRe)
+	pcboardRe      = regexp.MustCompile(PCBoardRe)
+	renegadeRe     = regexp.MustCompile(RenegadeRe)
+	telegardRe     = regexp.MustCompile(TelegardRe)
+	wildcatRe      = regexp.MustCompile(WildcatRe)
+	wwivHashRe     = regexp.MustCompile(WWIVHashRe)
+	wwivHeartRe    = regexp.MustCompile(WWIVHeartRe)
 )
 
 // Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.
 const (
 	Clear string = "@CLS@"
-
-	celerityCodes = "kbgcrmywdBGCRMYWS"
 )
+
+const celerityCodes = "kbgcrmywdBGCRMYWS"
 
 // CelerityHTML writes to buf the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
@@ -136,8 +140,7 @@ func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
 // WildcatHTML writes to buf the HTML equivalent of Wildcat! BBS color codes with
 // matching CSS color classes.
 func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
-	re := regexp.MustCompile(WildcatRe)
-	p := re.ReplaceAll(src, []byte(`@X$1$2`))
+	p := wildcatRe.ReplaceAll(src, []byte(`@X$1$2`))
 	if err := split.PCBoardHTML(buf, p); err != nil {
 		return fmt.Errorf("wildcat html: %w", err)
 	}
@@ -152,6 +155,7 @@ func IsCelerity(src []byte) bool {
 	if len(seq) < 1 {
 		return false
 	}
+
 	for _, code := range []byte(celerityCodes) {
 		if bytes.Contains(src, []byte{seq[0], code}) {
 			return true
@@ -267,7 +271,7 @@ func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
 // TelegardHTML writes to buf the HTML equivalent of Telegard BBS color codes with
 // matching CSS color classes.
 func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
-	p := telegardRegex.ReplaceAll(src, []byte(`@X$1$2`))
+	p := telegardRe.ReplaceAll(src, []byte(`@X$1$2`))
 	if err := split.PCBoardHTML(buf, p); err != nil {
 		return fmt.Errorf("telegard html: %w", err)
 	}
@@ -278,13 +282,13 @@ func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
 // It trims the @CLS@ prefix used to clear the screen and the @PAUSE@ prefix
 // used to pause the display render.
 func TrimControls(src ...byte) []byte {
-	return trimControlsRegex.ReplaceAll(src, []byte(""))
+	return trimControlsRe.ReplaceAll(src, []byte(""))
 }
 
 // WWIVHashHTML writes to buf the HTML equivalent of WWIV BBS hash (#) color codes with
 // matching CSS color classes.
 func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHashRegex.ReplaceAll(src, []byte(`|0$1`))
+	p := wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv hash html: %w", err)
 	}
@@ -294,7 +298,7 @@ func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 // WWIVHeartHTML writes to buf the HTML equivalent of WWIV BBS heart (♥) color codes with
 // matching CSS color classes.
 func WWIVHeartHTML(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHeartRegex.ReplaceAll(src, []byte(`|0$1`))
+	p := wwivHeartRe.ReplaceAll(src, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv heart html: %w", err)
 	}
@@ -328,10 +332,12 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	if !find.Valid() {
 		return nil, none, ErrNone
 	}
+
 	all, err := io.ReadAll(&buf)
 	if err != nil {
 		return nil, none, fmt.Errorf("read all: %w", err)
 	}
+
 	switch find {
 	case ANSI:
 		return nil, none, ErrANSI
@@ -342,6 +348,7 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 	case Renegade, WWIVHash, WWIVHeart:
 		return split.VBars(all), find, nil
 	}
+
 	return nil, none, ErrNone
 }
 
@@ -355,12 +362,14 @@ func Find(r io.Reader) BBS {
 		if trim == nil {
 			continue
 		}
+
 		const l = len(Clear)
 		if len(trim) > l {
 			if bytes.Equal(trim[0:l], []byte(Clear)) {
 				slice = trim[l:]
 			}
 		}
+
 		switch {
 		case bytes.Contains(slice, ANSI.Bytes()):
 			return ANSI
@@ -384,6 +393,7 @@ func Find(r io.Reader) BBS {
 			return WWIVHeart
 		}
 	}
+
 	_ = scanner.Err() // any scan errors can be ignored
 	return none
 }
@@ -394,13 +404,16 @@ func HTML(buf *bytes.Buffer, src io.Reader) (BBS, error) {
 	if buf == nil {
 		return -1, ErrBuff
 	}
+
 	w := bytes.Buffer{}
 	r := io.TeeReader(src, &w)
 	find := Find(r)
+
 	p, err := io.ReadAll(&w)
 	if err != nil {
 		return -1, fmt.Errorf("read all: %w", err)
 	}
+
 	return find, find.HTML(buf, p)
 }
 
@@ -445,14 +458,17 @@ func (b BBS) CSS(buf *bytes.Buffer) error {
 	if buf == nil {
 		return ErrBuff
 	}
+
 	const name = "static/css/text_pcboard.css"
 	p, err := static.ReadFile(name)
 	if err != nil {
 		return fmt.Errorf("read file: %w", err)
 	}
+
 	if _, err = buf.Write(p); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
+
 	return nil
 }
 
@@ -461,6 +477,7 @@ func (b BBS) HTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
+
 	trim := TrimControls(src...)
 	switch b {
 	case ANSI:
@@ -489,6 +506,7 @@ func (b BBS) Name() string {
 	if !b.Valid() {
 		return ""
 	}
+
 	return [...]string{
 		"ANSI",
 		"Celerity",
@@ -506,36 +524,39 @@ func (b BBS) Remove(buf *bytes.Buffer, src ...byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
+
 	switch b {
 	case ANSI:
 		return ErrANSI
 	case Celerity:
-		return remove(buf, src, CelerityRe)
+		return remove(buf, src, celerityRe)
 	case PCBoard:
-		return remove(buf, src, PCBoardRe)
+		return remove(buf, src, pcboardRe)
 	case Renegade:
-		return remove(buf, src, RenegadeRe)
+		return remove(buf, src, renegadeRe)
 	case Telegard:
-		return remove(buf, src, TelegardRe)
+		return remove(buf, src, telegardRe)
 	case Wildcat:
-		return remove(buf, src, WildcatRe)
+		return remove(buf, src, wildcatRe)
 	case WWIVHash:
-		return remove(buf, src, WWIVHashRe)
+		return remove(buf, src, wwivHashRe)
 	case WWIVHeart:
-		return remove(buf, src, WWIVHeartRe)
+		return remove(buf, src, wwivHeartRe)
+	default:
+		return ErrNone
 	}
-	return ErrNone
 }
 
-func remove(buf *bytes.Buffer, src []byte, expr string) error {
+func remove(buf *bytes.Buffer, src []byte, expr *regexp.Regexp) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	re := regexp.MustCompile(expr)
-	p := re.ReplaceAll(src, []byte(""))
+
+	p := expr.ReplaceAll(src, []byte(""))
 	if _, err := buf.Write(p); err != nil {
 		return fmt.Errorf("write buffer: %w", err)
 	}
+
 	return nil
 }
 
@@ -544,6 +565,7 @@ func (b BBS) String() string {
 	if !b.Valid() {
 		return ""
 	}
+
 	return [...]string{
 		"ANSI ←[",
 		"Celerity |",

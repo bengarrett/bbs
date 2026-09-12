@@ -1,6 +1,6 @@
 module github.com/bengarrett/bbs
 
-go 1.26.3
+go 1.26.8
 
 require golang.org/x/text v0.38.0
 
