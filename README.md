@@ -1,10 +1,10 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/bengarrett/bbs.svg)](https://pkg.go.dev/github.com/bengarrett/bbs) &nbsp; [![Go Report Card](https://goreportcard.com/badge/github.com/bengarrett/bbs)](https://goreportcard.com/report/github.com/bengarrett/bbs)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bengarrett/bbs.svg)](https://pkg.go.dev/github.com/bengarrett/bbs)
 ![Coverage](https://img.shields.io/badge/Coverage-93.0%25-brightgreen)
 
 # Package bbs
 
 Package bbs is a [Go module](https://go.dev/) that interacts with legacy textfiles encoded with
-[Bulletin Board Systems]() (BBS) color codes to reconstruct them into HTML documents.
+[Bulletin Board Systems](<>) (BBS) color codes to reconstruct them into HTML documents.
 
 BBSes were popular in the 1980s and 1990s and allowed computer users to chat,
 message, and share files over the landline telephone network. The commercialization
