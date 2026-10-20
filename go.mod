@@ -5,7 +5,7 @@ go 1.27.2
 require golang.org/x/text v0.42.0
 
 require (
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	go.uber.org/nilaway v0.0.0-20250805202745-8ad05f089790 // indirect
 	golang.org/x/mod v0.41.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
