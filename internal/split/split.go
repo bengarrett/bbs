@@ -192,9 +192,8 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
-	const swapCmd = "S"
+	const swapCmd = 'S'
 
-	background := false
 	elm := colorStr{Foreground: "w", Background: "k", Content: ""}
 	colors := Celerity(src)
 	if len(colors) == 0 {
@@ -204,18 +203,16 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 		return nil
 	}
 	for _, color := range colors {
-		if color == swapCmd {
-			background = !background
-			continue
-		}
 		if len(color) < 1 {
 			continue
 		}
-		if !background {
+		if color[0] == swapCmd {
+			elm.Foreground, elm.Background = elm.Background, elm.Foreground
+			if len(color) == 1 {
+				continue
+			}
+		} else {
 			elm.Foreground = string(color[0])
-		}
-		if background {
-			elm.Background = string(color[0])
 		}
 		elm.Content = color[1:]
 		if err := celerityTemplate.Execute(buf, elm); err != nil {

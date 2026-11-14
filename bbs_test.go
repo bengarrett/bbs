@@ -102,13 +102,13 @@ func TestBBS_HTML(t *testing.T) {
 		{
 			"celerity", bbs.Celerity,
 			args{"|S|gHello|Rworld"},
-			`<i class="PBg PFw">Hello</i><i class="PBR PFw">world</i>`, false,
+			`<i class="PBw PFg">Hello</i><i class="PBw PFR">world</i>`, false,
 		},
 		{
 			"xss", bbs.Celerity,
 			args{"|S|gABC<script>alert('xss');</script>D|REF"},
-			`<i class="PBg PFw">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i>` +
-				`<i class="PBR PFw">EF</i>`, false,
+			`<i class="PBw PFg">ABC&lt;script&gt;alert(&#39;xss&#39;);&lt;/script&gt;D</i>` +
+				`<i class="PBw PFR">EF</i>`, false,
 		},
 	}
 	for _, tt := range tests {

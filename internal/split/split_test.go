@@ -108,19 +108,29 @@ func Test_CelerityHTML(t *testing.T) {
 			`<i class="PBk PFk">Hello world</i>`, false,
 		},
 		{
+			"swap",
+			args{"|b|S|WHello world"},
+			`<i class="PBk PFb"></i><i class="PBb PFW">Hello world</i>`, false,
+		},
+		{
+			"swap with text",
+			args{"|bHello |Sworld"},
+			`<i class="PBk PFb">Hello </i><i class="PBb PFk">world</i>`, false,
+		},
+		{
 			"background",
 			args{"|S|bHello world"},
-			`<i class="PBb PFw">Hello world</i>`, false,
+			`<i class="PBw PFb">Hello world</i>`, false,
 		},
 		{
 			"multi",
 			args{"|S|gHello|Rworld"},
-			`<i class="PBg PFw">Hello</i><i class="PBR PFw">world</i>`, false,
+			`<i class="PBw PFg">Hello</i><i class="PBw PFR">world</i>`, false,
 		},
 		{
 			"newline",
 			args{"|S|gHello\n|Rworld"},
-			`<i class="PBg PFw">Hello` + "\n" + `</i><i class="PBR PFw">world</i>`, false,
+			`<i class="PBw PFg">Hello` + "\n" + `</i><i class="PBw PFR">world</i>`, false,
 		},
 		{"false positive", args{"| Hello world |"}, "| Hello world |", false},
 		{"double bar", args{"||pipes"}, "||pipes", false},

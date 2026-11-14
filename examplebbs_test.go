@@ -16,7 +16,7 @@ func ExampleCelerityHTML() {
 		fmt.Print(err)
 	}
 	fmt.Print(buf.String())
-	// Output: <i class="PBk PFc">Hello </i><i class="PBk PFC"></i><i class="PBw PFC">world</i>
+	// Output: <i class="PBk PFc">Hello </i><i class="PBk PFC"></i><i class="PBC PFw">world</i>
 }
 
 func ExampleIsCelerity() {
