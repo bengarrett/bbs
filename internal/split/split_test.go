@@ -23,7 +23,7 @@ func Test_VBars(t *testing.T) {
 		{"last", args{"|23"}, 1},
 		{"out of range", args{"|24"}, 0},
 		{"incomplete", args{"|2"}, 0},
-		{"multiples", args{"|01Hello|00 |10world"}, 2},
+		{"multiples", args{"|01Hello|00 |10world"}, 3},
 		{"false positive", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, 2},
 	}
 	for _, tt := range tests {

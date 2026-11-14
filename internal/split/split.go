@@ -20,7 +20,7 @@ const (
 	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
 
 	// VBarsRe is a regular expression to match Renegade BBS color codes.
-	VBarsRe string = `\|(0[0-9]|1[1-9]|2[0-3])`
+	VBarsRe string = `\|(0[0-9]|1[0-9]|2[0-3])`
 
 	minColorLength     = 2
 	preallocationRatio = 2

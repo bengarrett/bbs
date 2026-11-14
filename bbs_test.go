@@ -295,6 +295,7 @@ func Test_RenegadeHTML(t *testing.T) {
 		{"false pos", args{"hello|world"}, "hello|world", false},
 		{"false pos double", args{"| hello world |"}, "| hello world |", false},
 		{"prefix", args{"|" + black + white + "Hello world"}, "<i class=\"P0 P7\">Hello world</i>", false},
+		{"bright green", args{"|10Hello world"}, `<i class="P0 P10">Hello world</i>`, false},
 		{
 			"multi",
 			args{"|" + black + white + "White |" + red + "Red Background"},
