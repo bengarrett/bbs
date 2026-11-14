@@ -185,7 +185,7 @@ func IsPCBoard(src []byte) bool {
 // The format uses the vertical bar (|) followed by a padded, numeric value between 00 and 23.
 func IsRenegade(src []byte) bool {
 	const first, last = 0, 23
-	const leadingZero = "%01d"
+	const leadingZero = "%02d"
 	for i := first; i <= last; i++ {
 		subslice := fmt.Appendf(nil, leadingZero, i)
 		subslice = append(Renegade.Bytes(), subslice...)

@@ -159,6 +159,7 @@ func Test_IsRenegade(t *testing.T) {
 		want bool
 	}{
 		{"empty", args{nil}, false},
+		{"single digit", args{[]byte("|0|")}, false},
 		{"celerity", args{[]byte("Hello |Bworld")}, false},
 		{"first", args{[]byte("|00")}, true},
 		{"end", args{[]byte("|23")}, true},
