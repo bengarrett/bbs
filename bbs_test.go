@@ -352,7 +352,12 @@ func Test_PCBoardHTML(t *testing.T) {
 		{
 			"casing",
 			args{"@xaBHello world"},
-			`<i class="PBA PFB">Hello world</i>`, false,
+			"@xaBHello world", false,
+		},
+		{
+			"leading text",
+			args{"Hello @X0Fworld"},
+			`Hello <i class="PB0 PFF">world</i>`, false,
 		},
 		{
 			"multi",

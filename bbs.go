@@ -92,7 +92,7 @@ var static embed.FS
 // Regular expressions to match BBS color codes.
 const (
 	CelerityRe  string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)` // matches Celerity
-	PCBoardRe   string = "(?i)@X([0-9A-F][0-9A-F])"              // matches PCBoard
+	PCBoardRe   string = `@X([0-9A-F][0-9A-F])`                  // matches PCBoard
 	RenegadeRe  string = `\|(0[0-9]|1[0-9]|2[0-3])`              // matches Renegade
 	TelegardRe  string = "(?i)`([0-9|A-F])([0-9|A-F])"           // matches Telegard
 	WildcatRe   string = `(?i)@([0-9|A-F])([0-9|A-F])@`          // matches Wildcat!

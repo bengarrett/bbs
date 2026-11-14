@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"html"
 	"html/template"
 	"regexp"
 	"strconv"
@@ -16,8 +17,8 @@ const (
 	// CelerityRe is a regular expression to match Celerity BBS color codes.
 	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
 
-	// PCBoardRe is a case-insensitive, regular expression to match PCBoard BBS color codes.
-	PCBoardRe string = "(?i)@X([0-9A-F][0-9A-F])"
+	// PCBoardRe is a case-sensitive regular expression to match PCBoard BBS color codes.
+	PCBoardRe string = `@X([0-9A-F][0-9A-F])`
 
 	// VBarsRe is a regular expression to match Renegade BBS color codes.
 	VBarsRe string = `\|(0[0-9]|1[0-9]|2[0-3])`
@@ -261,7 +262,17 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	for _, color := range xcodes {
+	re := regexp.MustCompile(PCBoardRe)
+	loc := re.FindIndex(src)
+	hasLeading := loc != nil && loc[0] > 0
+
+	for i, color := range xcodes {
+		if i == 0 && hasLeading {
+			if _, err := buf.WriteString(html.EscapeString(color)); err != nil {
+				return fmt.Errorf("write buffer: %w", err)
+			}
+			continue
+		}
 		if len(color) < minColorLength {
 			continue
 		}
