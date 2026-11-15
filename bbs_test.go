@@ -201,6 +201,27 @@ func Test_IsPCBoard(t *testing.T) {
 	}
 }
 
+func Test_IsTelegard(t *testing.T) {
+	tests := []struct {
+		name string
+		b    []byte
+		want bool
+	}{
+		{"empty", nil, false},
+		{"single digit", []byte("`7Hello"), false},
+		{"pipe", []byte("`|0Hello"), false},
+		{"hex", []byte("`0FHello"), true},
+		{"upper", []byte("`FFHello"), true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := bbs.IsTelegard(tt.b); got != tt.want {
+				t.Errorf("IsTelegard() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func Test_IsWildcat(t *testing.T) {
 	type args struct {
 		b []byte

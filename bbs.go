@@ -93,9 +93,9 @@ var static embed.FS
 const (
 	CelerityRe  string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)` // matches Celerity
 	PCBoardRe   string = `@X([0-9A-F][0-9A-F])`                  // matches PCBoard
-	RenegadeRe  string = `\|(0[0-9]|1[0-9]|2[0-3])`              // matches Renegade
-	TelegardRe  string = "(?i)`([0-9|A-F])([0-9|A-F])"           // matches Telegard
-	WildcatRe   string = `(?i)@([0-9|A-F])([0-9|A-F])@`          // matches Wildcat!
+	RenegadeRe  string = `\|(0[0-9]|1[0-9]|2[0-3])`              // matches Renegade and Telegard pipes
+	TelegardRe  string = "(?i)`([0-9A-F])([0-9A-F])"             // matches Telegard graves
+	WildcatRe   string = `@([0-9A-F])([0-9A-F])@`                // matches Wildcat!
 	WWIVHashRe  string = `\|#(\d)`                               // matches WWIV with hashes #
 	WWIVHeartRe string = `\x03(\d)`                              // matches WWIV with hearts ♥
 )
@@ -197,18 +197,9 @@ func IsRenegade(src []byte) bool {
 }
 
 // IsTelegard reports if the bytes contains Telegard BBS color codes.
-// The format uses the grave accent (`) followed by a padded, numeric value between 00 and 23.
+// The format uses the grave accent (`) followed by two hexadecimal digits (00 to FF).
 func IsTelegard(src []byte) bool {
-	const first, last = 0, 23
-	const leadingZero = "%01d"
-	for i := first; i <= last; i++ {
-		subslice := fmt.Appendf(nil, leadingZero, i)
-		subslice = append(Telegard.Bytes(), subslice...)
-		if bytes.Contains(src, subslice) {
-			return true
-		}
-	}
-	return false
+	return telegardRe.Match(src)
 }
 
 // IsWWIVHash reports if the bytes contains WWIV BBS hash color codes.
@@ -313,10 +304,10 @@ type BBS int
 const (
 	ANSI      BBS = iota // ANSI escape sequence.
 	Celerity             // Celerity pipe.
+	Renegade             // Renegade pipe, despite the name these originate in Telegard.
 	PCBoard              // PCBoard @ sign.
-	Renegade             // Renegade pipe.
-	Telegard             // Telegard grave accent.
 	Wildcat              // Wildcat! @ sign.
+	Telegard             // Telegard grave accent.
 	WWIVHash             // WWIV # symbol.
 	WWIVHeart            // WWIV ♥ symbol.
 )
@@ -508,14 +499,14 @@ func (b BBS) Name() string {
 	}
 
 	return [...]string{
-		"ANSI",
-		"Celerity",
-		"PCBoard",
-		"Renegade",
-		"Telegard",
-		"Wildcat!",
-		"WWIV #",
-		"WWIV ♥",
+		ANSI:      "ANSI",
+		Celerity:  "Celerity",
+		Renegade:  "Renegade",
+		PCBoard:   "PCBoard",
+		Wildcat:   "Wildcat!",
+		Telegard:  "Telegard",
+		WWIVHash:  "WWIV #",
+		WWIVHeart: "WWIV ♥",
 	}[b]
 }
 
@@ -567,14 +558,14 @@ func (b BBS) String() string {
 	}
 
 	return [...]string{
-		"ANSI ←[",
-		"Celerity |",
-		"PCBoard @X",
-		"Renegade |",
-		"Telegard `",
-		"Wildcat! @@",
-		"WWIV |#",
-		"WWIV ♥",
+		ANSI:      "ANSI ←[",
+		Celerity:  "Celerity |",
+		Renegade:  "Renegade |",
+		PCBoard:   "PCBoard @X",
+		Wildcat:   "Wildcat! @@",
+		Telegard:  "Telegard `",
+		WWIVHash:  "WWIV |#",
+		WWIVHeart: "WWIV ♥",
 	}[b]
 }
 

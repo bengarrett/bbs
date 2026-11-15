@@ -42,7 +42,7 @@ func ExampleIsRenegade() {
 
 func ExampleIsTelegard() {
 	const grave = "\u0060" // godoc treats a grave character as a special control
-	src := []byte(grave + "7Hello world")
+	src := []byte(grave + "07Hello world")
 
 	fmt.Print(bbs.IsTelegard(src))
 	// Output: true
