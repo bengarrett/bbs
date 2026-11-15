@@ -211,6 +211,7 @@ func Test_IsTelegard(t *testing.T) {
 		{"single digit", []byte("`7Hello"), false},
 		{"pipe", []byte("`|0Hello"), false},
 		{"hex", []byte("`0FHello"), true},
+		{"lower", []byte("`0fHello"), false},
 		{"upper", []byte("`FFHello"), true},
 	}
 	for _, tt := range tests {

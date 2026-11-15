@@ -71,6 +71,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/bengarrett/bbs/internal/pattern"
 	"github.com/bengarrett/bbs/internal/split"
 )
 
@@ -91,25 +92,25 @@ var static embed.FS
 
 // Regular expressions to match BBS color codes.
 const (
-	CelerityRe  string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)` // matches Celerity
-	PCBoardRe   string = `@X([0-9A-F][0-9A-F])`                  // matches PCBoard
-	RenegadeRe  string = `\|(0[0-9]|1[0-9]|2[0-3])`              // matches Renegade and Telegard pipes
-	TelegardRe  string = "(?i)`([0-9A-F])([0-9A-F])"             // matches Telegard graves
-	WildcatRe   string = `@([0-9A-F])([0-9A-F])@`                // matches Wildcat!
-	WWIVHashRe  string = `\|#(\d)`                               // matches WWIV with hashes #
-	WWIVHeartRe string = `\x03(\d)`                              // matches WWIV with hearts ♥
+	CelerityRe  string = pattern.Celerity  // matches Celerity
+	PCBoardRe   string = pattern.PCBoard   // matches PCBoard
+	RenegadeRe  string = pattern.Renegade  // matches Renegade and Telegard pipes
+	TelegardRe  string = pattern.Telegard  // matches Telegard graves
+	WildcatRe   string = pattern.Wildcat   // matches Wildcat!
+	WWIVHashRe  string = pattern.WWIVHash  // matches WWIV with hashes #
+	WWIVHeartRe string = pattern.WWIVHeart // matches WWIV with hearts ♥
 )
 
 // Pre-compiled regular expressions for performance.
 var (
 	trimControlsRe = regexp.MustCompile(`@(CLS|CLS |PAUSE)@`)
-	celerityRe     = regexp.MustCompile(CelerityRe)
-	pcboardRe      = regexp.MustCompile(PCBoardRe)
-	renegadeRe     = regexp.MustCompile(RenegadeRe)
-	telegardRe     = regexp.MustCompile(TelegardRe)
-	wildcatRe      = regexp.MustCompile(WildcatRe)
-	wwivHashRe     = regexp.MustCompile(WWIVHashRe)
-	wwivHeartRe    = regexp.MustCompile(WWIVHeartRe)
+	celerityRe     = pattern.CelerityRe
+	pcboardRe      = pattern.PCBoardRe
+	renegadeRe     = pattern.RenegadeRe
+	telegardRe     = pattern.TelegardRe
+	wildcatRe      = pattern.WildcatRe
+	wwivHashRe     = pattern.WWIVHashRe
+	wwivHeartRe    = pattern.WWIVHeartRe
 )
 
 // Clear is a PCBoard specific control to clear the screen that's occasionally found in ANSI text.

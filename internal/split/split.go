@@ -13,18 +13,11 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/bengarrett/bbs/internal/pattern"
 )
 
 const (
-	// CelerityRe is a regular expression to match Celerity BBS color codes.
-	CelerityRe string = `\|(k|b|g|c|r|m|y|w|d|B|G|C|R|M|Y|W|S)`
-
-	// PCBoardRe is a case-sensitive regular expression to match PCBoard BBS color codes.
-	PCBoardRe string = `@X([0-9A-F][0-9A-F])`
-
-	// VBarsRe is a regular expression to match Renegade BBS color codes.
-	VBarsRe string = `\|(0[0-9]|1[0-9]|2[0-3])`
-
 	minColorLength     = 2
 	preallocationRatio = 2
 	vbarsTpl           = `<i class="P{{.Background}} P{{.Foreground}}">{{.Content}}</i>`
@@ -39,10 +32,6 @@ var (
 	vbarsTemplate    = template.Must(template.New("vbars").Parse(vbarsTpl))
 	celerityTemplate = template.Must(template.New("celerity").Parse(celerityTpl))
 	pcboardTemplate  = template.Must(template.New("pcboard").Parse(pcboardTpl))
-
-	celerityRe = regexp.MustCompile(CelerityRe)
-	pcboardRe  = regexp.MustCompile(PCBoardRe)
-	vbarsRe    = regexp.MustCompile(VBarsRe)
 )
 
 // colorInt template data for integer based color codes.
@@ -66,7 +55,7 @@ type colorStr struct {
 func VBars(src []byte) []string {
 	const sep rune = 65535
 	repl := string(sep) + "$1"
-	res := vbarsRe.ReplaceAll(src, []byte(repl))
+	res := pattern.RenegadeRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return nil
 	}
@@ -106,8 +95,8 @@ func VBarsHTMLF(buf *bytes.Buffer, src []byte) error {
 	return vBarsHTML(buf, false, src...)
 }
 
-func hasLeadingText(pattern string, src []byte) bool {
-	loc := regexp.MustCompile(pattern).FindIndex(src)
+func hasLeadingText(re *regexp.Regexp, src []byte) bool {
+	loc := re.FindIndex(src)
 	return loc != nil && loc[0] > 0
 }
 
@@ -130,7 +119,7 @@ func vBarsHTML(buf *bytes.Buffer, strict bool, src ...byte) error {
 		}
 		return nil
 	}
-	hasLeading := hasLeadingText(VBarsRe, src)
+	hasLeading := hasLeadingText(pattern.RenegadeRe, src)
 	for bar, color := range bars {
 		if bar == 0 && hasLeading {
 			if err := writeLeadingText(buf, color); err != nil {
@@ -192,7 +181,7 @@ func Celerity(src []byte) []string {
 	// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
 	const sep rune = 65535
 	repl := string(sep) + "$1"
-	res := celerityRe.ReplaceAll(src, []byte(repl))
+	res := pattern.CelerityRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -224,7 +213,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	hasLeading := hasLeadingText(CelerityRe, src)
+	hasLeading := hasLeadingText(pattern.CelerityRe, src)
 	for i, color := range colors {
 		if i == 0 && hasLeading {
 			if err := writeLeadingText(buf, color); err != nil {
@@ -258,7 +247,7 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 func PCBoard(src []byte) []string {
 	const sep rune = 65535
 	repl := string(sep) + "$1"
-	res := pcboardRe.ReplaceAll(src, []byte(repl))
+	res := pattern.PCBoardRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -289,7 +278,7 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	hasLeading := hasLeadingText(PCBoardRe, src)
+	hasLeading := hasLeadingText(pattern.PCBoardRe, src)
 	for i, color := range xcodes {
 		if i == 0 && hasLeading {
 			if err := writeLeadingText(buf, color); err != nil {
