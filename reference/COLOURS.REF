@@ -1,0 +1,111 @@
+
+                           IMBEDDED COLOUR CODES
+
+  There are two methods of changing colours in Telegard 3.0, for use in 
+  display files (*.MSG), in the language strings, menu prompts and in 
+  message text (where not stripped).
+
+  The two methods allow the use of the full range of colours -- all 
+  foreground and background combinations in low and high intensity, and of 
+  course the blinking versions of those as well.  This provides a total of 
+  256 different colour combinations.
+
+  The first method is the most compact, and was added since it will keep 
+  SysOp definable strings/menus to a shorter length (for more text). The 
+  second method is easier to use, and was implemented so that users don't 
+  need to remember the compact codes.
+
+  Both methods use a sequence of three characters to change the colour - 
+  the first method changes both the foreground and background at the same 
+  time.  The second method changes one at a time (so to change both the 
+  foreground and background, two sequences are required).
+
+  I highly suggest using the *first* method.  It's faster (and more 
+  efficient to part) and also more compact, and likely to be the method 
+  that is retained if one has to go. ;)
+
+  I. Some preliminary notes:
+  
+  For those looking for "Yellow" -- "Yellow" is the high intensity BROWN.
+  Why? I don't know (ask them DOS programmers from way back).  Likewise,
+  magenta and pink are also linked together (although this is far more 
+  intuitive).
+  
+  II. The first method:
+
+  The colour sequence indicator (`), followed by two characters from 0 to
+  9, A to F to form the colour code.  The colour codes are listed below for
+  your convenience (low and high intensity side by side).
+
+  REGULAR
+           Black   Blue    Green   Cyan    Red     Magenta Brown   White
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Black   | 00 08 | 01 09 | 02 0A | 03 0B | 04 0C | 05 0D | 06 0E | 07 0F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Blue    | 10 18 | 11 19 | 12 1A | 13 1B | 14 1C | 15 1D | 16 1E | 17 1F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Green   | 20 28 | 21 29 | 22 2A | 23 2B | 24 2C | 25 2D | 26 2E | 27 2F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Cyan    | 30 38 | 31 39 | 32 3A | 33 3B | 34 3C | 35 3D | 36 3E | 37 3F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Red     | 40 48 | 41 49 | 42 4A | 43 4B | 44 4C | 45 4D | 46 4E | 47 4F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Magenta | 50 58 | 51 59 | 52 5A | 53 5B | 54 5C | 55 5D | 56 5E | 57 5F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Brown   | 60 68 | 61 69 | 62 6A | 63 6B | 64 6C | 65 6D | 66 6E | 67 6F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  White   | 70 78 | 71 79 | 72 7A | 73 7B | 74 7C | 75 7D | 76 7E | 77 7F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+
+  BLINKING COLOURS
+                                                           
+           Black   Blue    Green   Cyan    Red     Magenta Brown   White
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Black   ³ 80 88 | 81 89 | 82 8A | 83 8B | 84 8C | 85 8D | 86 8E | 87 8F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Blue    ³ 90 98 | 91 99 | 92 9A | 93 9B | 94 9C | 95 9D | 96 9E | 97 9F |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Green   ³ A0 A8 | A1 A9 | A2 AA | A3 AB | A4 AC | A5 AD | A6 AE | A7 AF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Cyan    ³ B0 B8 | B1 B9 | B2 BA | B3 BB | B4 BC | B5 BD | B6 BE | B7 BF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Red     ³ C0 C8 | C1 C9 | C2 CA | C3 CB | C4 CC | C5 CD | C6 CE | C7 CF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Magenta ³ D0 D8 | D1 D9 | D2 DA | D3 DB | D4 DC | D5 DD | D6 DE | D7 DF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  Brown   ³ E0 E8 | E1 E9 | E2 EA | E3 EB | E4 EC | E5 ED | E6 EE | E7 EF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+  White   ³ F0 F8 | F1 F9 | F2 FA | F3 FB | F4 FC | F5 FD | F6 FE | F7 FF |
+          +-------+-------+-------+-------+-------+-------+-------+-------+
+
+  III. The second method:
+
+  The colour sequence indicator (|), followed by two characters (0..9)
+  which form the colour code.  This method changes only the foreground
+  or the background at any given time.  To change both attributes, two
+  colour sequences need to be used.
+
+            Fore                Back              Blink
+          +-------+            +----+            +-----+
+  Black   | 00 08 |    Black   | 16 |    Black   |  24 |
+          +-------+            +----+            +-----+
+  Blue    | 01 09 |    Blue    | 17 |    Blue    |  25 |
+          +-------+            +----+            +-----+
+  Green   | 02 10 |    Green   | 18 |    Green   |  26 |
+          +-------+            +----+            +-----+
+  Cyan    | 03 11 |    Cyan    | 19 |    Cyan    |  27 |
+          +-------+            +----+            +-----+
+  Red     | 04 12 |    Red     | 20 |    Red     |  28 |
+          +-------+            +----+            +-----+
+  Magenta | 05 13 |    Magenta | 21 |    Magenta |  29 |
+          +-------+            +----+            +-----+
+  Brown   | 06 14 |    Brown   | 22 |    Brown   |  30 |
+          +-------+            +----+            +-----+
+  White   | 07 15 |    White   | 23 |    White   |  31 |
+          +-------+            +----+            +-----+
+
+  The "|" characters in the boxes to not translate into colour codes 
+  because they are not immediately followed by a number (but rather by
+  other characters (i.e. "-" or " ").  This is important to note if you 
+  need to hse the "|" character anywhere.
+

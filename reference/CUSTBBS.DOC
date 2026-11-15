@@ -1,0 +1,82 @@
+
+@X Color Codes
+
+In addition to supporting ANSI display files, you can choose to use PCBoard's 
+@X color codes to colorize your display file and PCBTEXT prompts.  If you 
+choose to use ANSI to colorize your display files, you will need to create an 
+graphics specific version of each display file in addition to the regular 
+file.
+
+The @X codes are eventually translated to ANSI so the caller can view the 
+color screens.  Before this occurs, however, PCBoard will check to see if the 
+caller is capable of ANSI.  If they are, PCBoard will translate the color 
+codes into ANSI.  If they are not, PCBoard will bypass the color codes so the 
+user does not end up seeing what appears to be garbage on their screen. 
+Because PCBoard is smart enough to determine if the caller is capable of ANSI 
+or not, you can create one single display file for both your ANSI and 
+non-ANSI callers.  This saves you time when creating and updating your 
+display files.
+
+Included with your PCBoard package is a program called PCBEdit. This program 
+should be used to create screens that are colorized with @X codes.  You 
+should also be aware that there are several other programs available as 
+shareware which you can use to create screens in the PCBoard @X color code 
+format.
+
+If you want to enter @X codes in message or if you manually create your 
+display files, you will need to know the proper format for the @X codes.  The 
+format is as follows:
+
+
+@X[background value][foreground value]
+
+
+After you enter @X, you need to enter a background value, followed by a 
+foreground value.  If you look at the table which follows this paragraph, you 
+will notice that it is broken down into two halves.  One half shows the 
+values for the background colors and the other half shows the values for the 
+foreground value.  Notice also that the background and foreground sections 
+are also divided.   Background colors can be set to be blinking or not, and 
+foreground values can be set to be bright or normal (dull) versions of the 
+color that is shown in the left column of the table.
+
+
+ 	Background (1st Digit) 		Foreground (2nd Digit) 	
+Color 	Normal 	Blinking 	Normal 	Bright 
+-------------------------------------------------------------
+Black     0        8              0       8 
+Blue      1        9              1       9 
+Green     2        A              2       A 
+Cyan      3        B              3       B 
+Red       4        C              4       C 
+Magenta   5        D              5       D 
+Yellow    6        E              6       E 
+White     7        F              7       F 
+
+
+Using the color code table you can quickly determine that by entering @X1F, 
+you will be setting the current color to bright white text on a blue 
+background.  To help illustrate the color selection scheme, the following are 
+sample @X color codes:
+
+
+@X07 - Dull white (gray) text on a black background
+@X47 - Dull white (gray) text on a red background
+@X0B - Bright cyan text on a black background
+@X8F - Bright white text on a blinking black background
+@XC7 - Dull white (gray) text on a blinking red background.
+
+Using @ Macros and @X Codes
+
+There are primarily three places in PCBoard where you can use @ macros and @X 
+codes.  They are:
+
+Display files
+
+Most PCBTEXT entries (some does not support @ macros or @X codes).
+
+Inside of messages left on the BBS.
+
+To use the macros or codes, simply enter them into the display file, PCBTEXT 
+entry, or message editor in the proper format.  If you do, the code or macro 
+will be properly substituted.

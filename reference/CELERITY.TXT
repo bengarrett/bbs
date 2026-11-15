@@ -1,0 +1,115 @@
+                 -= Celerity v2.0 Operations Manual =-
+   -----------------------------------------------------------------
+
+Section 4: Customizing Celerity
+-------------------------------
+
+Introduction
+------------
+
+One of the specialties of Celerity is its ability to allow SysOps to change
+the way it looks and feels.  A number of display screens and display features
+may be altered or radically changed to suit the SysOp's desires.
+
+Some of the factors affecting a user's display are changed in CelSetup, but
+will be outlined here for your convenience.
+
+Color Setup:  This section also has an impact on the appearance of your
+system, particularly the default user colors.  Although users can and do
+change their colors, many people get a first impression from the look of the
+default color set.
+
+CelerityText files: With version 2.0, Celerity now supports external
+CelerityText files used to tailor each and every bit of textual data within
+the BBS.  Although a few other BBS programs support external language files,
+none of them have developed a system so flexible, comprehensive, or efficient
+as Celerity has. See the section on "CelerityText" below for full details.
+
+
+Color Codes
+-----------
+
+Celerity BBS allows sysops and users easy access to colors within the BBS. 
+You need not learn arcane ANSI command sequences like Escape[42m; to define a
+color, you can use simple two-character "pipe codes".  Pipe codes are always
+preceded by a pipe character (|) and consist of a single digit.  Please note
+that when you type a pipe character, it will NOT appear on your screen unless
+it is followed by an invalid color character or a second pipe character
+(typing "||" will be displayed as "|").
+
+Celerity pipe codes may be used in any user-viewable text within the BBS,
+including setup-configured text, message titles, tag lines, file descriptions,
+and more.  Note that if you are viewing this documentation file from within
+Celerity, the pipe code examples in this file will be executed and your
+display may look strange.  The following pipe commands are currently
+supported:
+
+|1 - User defined color #1
+|2 - User defined color #2
+|3 - User defined color #3
+|4 - User defined color #4
+|5 - User defined color #5
+
+   -----------------------------------------------------------------
+     Celerity v2.0                                         Page 110
+
+
+
+
+
+
+
+                 -= Celerity v2.0 Operations Manual =-
+   -----------------------------------------------------------------
+
+|6 - User defined color #6
+|7 - User defined color #7
+|8 - User defined color #8
+|9 - Carriage return
+|k = Low intensity black
+|b - Low intensity blue
+|g - Low intensity green
+|c - Low intensity cyan
+|r - Low intensity red
+|m - Low intensity magenta
+|y - Low intensity yellow (brown)
+|w - Low intensity white
+|d - High intensity black (dark gray)
+|B - High intensity blue
+|G - High intensity green
+|C - High intensity cyan
+|R - High intensity red
+|M - High intensity magenta
+|Y - High intensity yellow (yellow)
+|W - High intensity white
+|S - Swap foreground and background colors (to change background)
+|P - Pause (ask user to hit enter)
+|D - Display current date
+|T - Display current time
+|H - Home (clear screen)
+|X - Blinking attribute on
+|x - Blinking attribute off
+|O - Cursor on
+|o - Cursor off
+
+For example, |W would set the text color to bright white.  |g sets the text to
+low-intensity green.  |b|S|W would set the color to blue, switch the blue to
+the background, and set the foreground color to white, this giving you white
+on blue.  |1|S|1 would take the user's defined color #1 and reverse it.
+
+Celerity pipe codes are the recommended method of changing colors within
+CelerityText files (see "CelerityText" below).
+
+Celerity also understands and supports the @bf (b=background, f=foreground)
+color setting mode to set a color to a hexadecimal value.
+
+
+
+
+
+
+
+
+
+   -----------------------------------------------------------------
+     Celerity v2.0                                         Page 111
