@@ -330,7 +330,7 @@ func Test_RenegadeHTML(t *testing.T) {
 		{
 			"sliced?",
 			args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"},
-			"", true,
+			"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546<i class=\"P0 P12\">TH</i>", false,
 		},
 	}
 	for _, tt := range tests {
@@ -489,6 +489,11 @@ func Test_WWIVHashHTML(t *testing.T) {
 			args{"|#7Hello world"},
 			`<i class="P0 P7">Hello world</i>`, false,
 		},
+		{
+			"leading text",
+			args{"Hello |#7world"},
+			`Hello <i class="P0 P7">world</i>`, false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -645,4 +650,34 @@ func TestCelerityHTMLNil(t *testing.T) {
 			t.Errorf("CelerityHTML() error = %v, wantErr %v", err, true)
 		}
 	})
+}
+
+func Test_Fields(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		wantBBS  bbs.BBS
+		wantSeqs []string
+	}{
+		{"pcboard", "@X03Hello @XF0world", bbs.PCBoard, []string{"03Hello ", "F0world"}},
+		{"telegard", "`03Hello `F0world", bbs.Telegard, []string{"03Hello ", "F0world"}},
+		{"wildcat", "@03@Hello @F0@world", bbs.Wildcat, []string{"03Hello ", "F0world"}},
+		{"renegade", "|03Hello |15world", bbs.Renegade, []string{"03Hello ", "15world"}},
+		{"wwiv hash", "|#3Hello |#7world", bbs.WWIVHash, []string{"03Hello ", "07world"}},
+		{"wwiv heart", "\x033Hello \x037world", bbs.WWIVHeart, []string{"03Hello ", "07world"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotSeqs, gotBBS, err := bbs.Fields(strings.NewReader(tt.input))
+			if err != nil {
+				t.Fatalf("Fields() error = %v", err)
+			}
+			if gotBBS != tt.wantBBS {
+				t.Errorf("Fields() bbs = %v, want %v", gotBBS, tt.wantBBS)
+			}
+			if !reflect.DeepEqual(gotSeqs, tt.wantSeqs) {
+				t.Errorf("Fields() seqs = %#v, want %#v", gotSeqs, tt.wantSeqs)
+			}
+		})
+	}
 }

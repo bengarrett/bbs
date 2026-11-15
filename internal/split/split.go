@@ -1,5 +1,7 @@
 // Package split interacts with the source bytes, disassembling the
 // source encodings into a slice for additional parsing.
+//
+//nolint:gochecknoglobals
 package split
 
 import (
@@ -33,12 +35,14 @@ const (
 var ErrBuff = errors.New("bytes buffer cannot be nil")
 
 // Pre-compiled HTML templates for performance.
-//
-//nolint:gochecknoglobals
 var (
 	vbarsTemplate    = template.Must(template.New("vbars").Parse(vbarsTpl))
 	celerityTemplate = template.Must(template.New("celerity").Parse(celerityTpl))
 	pcboardTemplate  = template.Must(template.New("pcboard").Parse(pcboardTpl))
+
+	celerityRe = regexp.MustCompile(CelerityRe)
+	pcboardRe  = regexp.MustCompile(PCBoardRe)
+	vbarsRe    = regexp.MustCompile(VBarsRe)
 )
 
 // colorInt template data for integer based color codes.
@@ -61,9 +65,8 @@ type colorStr struct {
 // An empty slice is returned when no valid bar code values exists.
 func VBars(src []byte) []string {
 	const sep rune = 65535
-	re := regexp.MustCompile(VBarsRe)
 	repl := string(sep) + "$1"
-	res := re.ReplaceAll(src, []byte(repl))
+	res := vbarsRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return nil
 	}
@@ -103,6 +106,18 @@ func VBarsHTMLF(buf *bytes.Buffer, src []byte) error {
 	return vBarsHTML(buf, false, src...)
 }
 
+func hasLeadingText(pattern string, src []byte) bool {
+	loc := regexp.MustCompile(pattern).FindIndex(src)
+	return loc != nil && loc[0] > 0
+}
+
+func writeLeadingText(buf *bytes.Buffer, text string) error {
+	if _, err := buf.WriteString(html.EscapeString(text)); err != nil {
+		return fmt.Errorf("write buffer: %w", err)
+	}
+	return nil
+}
+
 func vBarsHTML(buf *bytes.Buffer, strict bool, src ...byte) error {
 	if buf == nil {
 		return ErrBuff
@@ -115,7 +130,14 @@ func vBarsHTML(buf *bytes.Buffer, strict bool, src ...byte) error {
 		}
 		return nil
 	}
+	hasLeading := hasLeadingText(VBarsRe, src)
 	for bar, color := range bars {
+		if bar == 0 && hasLeading {
+			if err := writeLeadingText(buf, color); err != nil {
+				return err
+			}
+			continue
+		}
 		if len(color) < minColorLength {
 			continue
 		}
@@ -169,9 +191,8 @@ func barForeground(n int) bool {
 func Celerity(src []byte) []string {
 	// The format uses the vertical bar "|" followed by a case sensitive single alphabetic character.
 	const sep rune = 65535
-	re := regexp.MustCompile(CelerityRe)
 	repl := string(sep) + "$1"
-	res := re.ReplaceAll(src, []byte(repl))
+	res := celerityRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -203,7 +224,14 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	for _, color := range colors {
+	hasLeading := hasLeadingText(CelerityRe, src)
+	for i, color := range colors {
+		if i == 0 && hasLeading {
+			if err := writeLeadingText(buf, color); err != nil {
+				return err
+			}
+			continue
+		}
 		if len(color) < 1 {
 			continue
 		}
@@ -229,9 +257,8 @@ func CelerityHTML(buf *bytes.Buffer, src []byte) error {
 // An empty slice is returned when no valid @X code values exists.
 func PCBoard(src []byte) []string {
 	const sep rune = 65535
-	re := regexp.MustCompile(PCBoardRe)
 	repl := string(sep) + "$1"
-	res := re.ReplaceAll(src, []byte(repl))
+	res := pcboardRe.ReplaceAll(src, []byte(repl))
 	if !bytes.ContainsRune(res, sep) {
 		return []string{}
 	}
@@ -262,14 +289,11 @@ func PCBoardHTML(buf *bytes.Buffer, src []byte) error {
 		}
 		return nil
 	}
-	re := regexp.MustCompile(PCBoardRe)
-	loc := re.FindIndex(src)
-	hasLeading := loc != nil && loc[0] > 0
-
+	hasLeading := hasLeadingText(PCBoardRe, src)
 	for i, color := range xcodes {
 		if i == 0 && hasLeading {
-			if _, err := buf.WriteString(html.EscapeString(color)); err != nil {
-				return fmt.Errorf("write buffer: %w", err)
+			if err := writeLeadingText(buf, color); err != nil {
+				return err
 			}
 			continue
 		}

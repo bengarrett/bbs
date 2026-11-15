@@ -334,10 +334,18 @@ func Fields(src io.Reader) ([]string, BBS, error) {
 		return nil, none, ErrANSI
 	case Celerity:
 		return split.Celerity(all), find, nil
-	case PCBoard, Telegard, Wildcat:
+	case PCBoard:
 		return split.PCBoard(all), find, nil
-	case Renegade, WWIVHash, WWIVHeart:
+	case Telegard:
+		return split.PCBoard(telegardRe.ReplaceAll(all, []byte(`@X$1$2`))), find, nil
+	case Wildcat:
+		return split.PCBoard(wildcatRe.ReplaceAll(all, []byte(`@X$1$2`))), find, nil
+	case Renegade:
 		return split.VBars(all), find, nil
+	case WWIVHash:
+		return split.VBars(wwivHashRe.ReplaceAll(all, []byte(`|0$1`))), find, nil
+	case WWIVHeart:
+		return split.VBars(wwivHeartRe.ReplaceAll(all, []byte(`|0$1`))), find, nil
 	}
 
 	return nil, none, ErrNone
@@ -364,22 +372,18 @@ func Find(r io.Reader) BBS {
 		switch {
 		case bytes.Contains(slice, ANSI.Bytes()):
 			return ANSI
-		case bytes.Contains(slice, Celerity.Bytes()):
-			if IsRenegade(slice) {
-				return Renegade
-			}
-			if IsCelerity(slice) {
-				return Celerity
-			}
-			return none
+		case IsRenegade(slice):
+			return Renegade
+		case IsCelerity(slice):
+			return Celerity
+		case IsWWIVHash(slice):
+			return WWIVHash
 		case IsPCBoard(slice):
 			return PCBoard
 		case IsTelegard(slice):
 			return Telegard
 		case IsWildcat(slice):
 			return Wildcat
-		case IsWWIVHash(slice):
-			return WWIVHash
 		case IsWWIVHeart(slice):
 			return WWIVHeart
 		}

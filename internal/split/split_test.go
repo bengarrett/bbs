@@ -134,6 +134,7 @@ func Test_CelerityHTML(t *testing.T) {
 		},
 		{"false positive", args{"| Hello world |"}, "| Hello world |", false},
 		{"double bar", args{"||pipes"}, "||pipes", false},
+		{"leading text", args{"Hello |bworld"}, `Hello <i class="PBk PFb">world</i>`, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -161,7 +162,7 @@ func Test_VBarsHTML(t *testing.T) {
 		wantErr bool
 	}{
 		{"empty", args{}, "", false},
-		{"false positive", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, "", true},
+		{"false positive", args{"Defacto2 Issue January 1997 (c) 1997\n\nLINE2546|12TH"}, "Defacto2 Issue January 1997 (c) 1997\n\nLINE2546<i class=\"P0 P12\">TH</i>", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
