@@ -395,16 +395,17 @@ const none = -1
 // Fields splits the io.Reader around the first instance of one or more consecutive BBS color codes.
 // An error is returned if no color codes are found or if ANSI control sequences are first found.
 func Fields(src io.Reader) ([]string, BBS, error) {
-	buf := bytes.Buffer{}
-	r := io.TeeReader(src, &buf)
-	find := Find(r)
-	if !find.Valid() {
-		return nil, none, ErrNone
+	if src == nil {
+		return nil, none, ErrReader
 	}
 
-	all, err := io.ReadAll(&buf)
+	all, err := io.ReadAll(src)
 	if err != nil {
 		return nil, none, fmt.Errorf("read all: %w", err)
+	}
+	find := Find(bytes.NewReader(all))
+	if !find.Valid() {
+		return nil, none, ErrNone
 	}
 
 	switch find {
@@ -509,14 +510,11 @@ func findAndRead(buf *bytes.Buffer, src io.Reader) ([]byte, BBS, error) {
 		return nil, -1, ErrReader
 	}
 
-	w := bytes.Buffer{}
-	r := io.TeeReader(src, &w)
-	find := Find(r)
-
-	p, err := io.ReadAll(&w)
+	p, err := io.ReadAll(src)
 	if err != nil {
 		return nil, -1, fmt.Errorf("read all: %w", err)
 	}
+	find := Find(bytes.NewReader(p))
 	return p, find, nil
 }
 

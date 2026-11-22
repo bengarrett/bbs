@@ -89,3 +89,21 @@ func Test_PNGRenegadeCelerityAndUTF8(t *testing.T) {
 	}
 	assertPixelRGB(t, img, 0, 0, 0xff, 0xff, 0x55)
 }
+
+func Test_PNGLargeReaderNotTruncatedAt4KB(t *testing.T) {
+	// bufio.Scanner buffers 4096 bytes at a time; ensure io.Reader helpers
+	// read the entire stream past 4096 bytes when Find matches on line 1.
+	line := "@X0F" + strings.Repeat("A", 80) + "\r\n"
+	src := strings.Repeat(line, 60) // > 5000 bytes, 60 rows
+	var buf bytes.Buffer
+	if _, err := bbs.PNG(&buf, strings.NewReader(src)); err != nil {
+		t.Fatalf("PNG(large reader) error = %v", err)
+	}
+	img, err := png.Decode(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if img.Bounds().Dy() != 60*16 {
+		t.Errorf("PNG height = %d, want %d (60 rows)", img.Bounds().Dy(), 60*16)
+	}
+}
