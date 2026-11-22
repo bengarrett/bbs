@@ -59,6 +59,8 @@
 //
 // [Bulletin Board Systems]: https://spectrum.ieee.org/social-medias-dialup-ancestor-the-bulletin-board-system
 // [ANSI control codes]: https://www.cse.psu.edu/~kxc104/class/cse472/09f/hw/hw7/vt100ansi.htm
+//
+//nolint:gochecknoglobals
 package bbs
 
 import (
@@ -84,7 +86,8 @@ var (
 
 // Syntax errors.
 var (
-	ErrBuff = errors.New("bytes buffer cannot be nil")
+	ErrBuff   = errors.New("bytes buffer cannot be nil")
+	ErrReader = errors.New("reader cannot be nil")
 )
 
 //go:embed static/*
@@ -120,6 +123,14 @@ const (
 
 const celerityCodes = "kbgcrmywdBGCRMYWS"
 
+// CelerityANSI writes to buf the ANSI SGR equivalent of Celerity BBS color codes.
+func CelerityANSI(buf *bytes.Buffer, src ...byte) error {
+	if err := split.CelerityANSI(buf, src); err != nil {
+		return fmt.Errorf("celerity ansi: %w", err)
+	}
+	return nil
+}
+
 // CelerityHTML writes to buf the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
 func CelerityHTML(buf *bytes.Buffer, src ...byte) error {
@@ -129,11 +140,28 @@ func CelerityHTML(buf *bytes.Buffer, src ...byte) error {
 	return nil
 }
 
+// RenegadeANSI writes to buf the ANSI SGR equivalent of Renegade BBS color codes.
+func RenegadeANSI(buf *bytes.Buffer, src ...byte) error {
+	if err := split.VBarsANSI(buf, src); err != nil {
+		return fmt.Errorf("renegade ansi: %w", err)
+	}
+	return nil
+}
+
 // RenegadeHTML writes to buf the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
 func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
 	if err := split.VBarsHTML(buf, src); err != nil {
 		return fmt.Errorf("renegade html: %w", err)
+	}
+	return nil
+}
+
+// WildcatANSI writes to buf the ANSI SGR equivalent of Wildcat! BBS color codes.
+func WildcatANSI(buf *bytes.Buffer, src ...byte) error {
+	p := wildcatRe.ReplaceAll(src, []byte(`@X$1$2`))
+	if err := split.PCBoardANSI(buf, p); err != nil {
+		return fmt.Errorf("wildcat ansi: %w", err)
 	}
 	return nil
 }
@@ -251,11 +279,28 @@ func IsWildcat(src []byte) bool {
 	return false
 }
 
+// PCBoardANSI writes to buf the ANSI SGR equivalent of PCBoard BBS color codes.
+func PCBoardANSI(buf *bytes.Buffer, src ...byte) error {
+	if err := split.PCBoardANSI(buf, src); err != nil {
+		return fmt.Errorf("pcboard ansi: %w", err)
+	}
+	return nil
+}
+
 // PCBoardHTML writes to buf the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
 	if err := split.PCBoardHTML(buf, src); err != nil {
 		return fmt.Errorf("pcboard html: %w", err)
+	}
+	return nil
+}
+
+// TelegardANSI writes to buf the ANSI SGR equivalent of Telegard BBS color codes.
+func TelegardANSI(buf *bytes.Buffer, src ...byte) error {
+	p := telegardRe.ReplaceAll(src, []byte(`@X$1$2`))
+	if err := split.PCBoardANSI(buf, p); err != nil {
+		return fmt.Errorf("telegard ansi: %w", err)
 	}
 	return nil
 }
@@ -277,12 +322,30 @@ func TrimControls(src ...byte) []byte {
 	return trimControlsRe.ReplaceAll(src, []byte(""))
 }
 
+// WWIVHashANSI writes to buf the ANSI SGR equivalent of WWIV BBS hash (#) color codes.
+func WWIVHashANSI(buf *bytes.Buffer, src ...byte) error {
+	p := wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
+	if err := split.VBarsANSI(buf, p); err != nil {
+		return fmt.Errorf("wwiv hash ansi: %w", err)
+	}
+	return nil
+}
+
 // WWIVHashHTML writes to buf the HTML equivalent of WWIV BBS hash (#) color codes with
 // matching CSS color classes.
 func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 	p := wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv hash html: %w", err)
+	}
+	return nil
+}
+
+// WWIVHeartANSI writes to buf the ANSI SGR equivalent of WWIV BBS heart (♥) color codes.
+func WWIVHeartANSI(buf *bytes.Buffer, src ...byte) error {
+	p := wwivHeartRe.ReplaceAll(src, []byte(`|0$1`))
+	if err := split.VBarsANSI(buf, p); err != nil {
+		return fmt.Errorf("wwiv heart ansi: %w", err)
 	}
 	return nil
 }
@@ -394,11 +457,32 @@ func Find(r io.Reader) BBS {
 	return none
 }
 
+// ToANSI writes to buf the ANSI SGR equivalent of BBS color codes.
+// The first found color code format is used for the remainder of the Reader.
+func ToANSI(buf *bytes.Buffer, src io.Reader) (BBS, error) {
+	p, find, err := findAndRead(buf, src)
+	if err != nil {
+		return find, err
+	}
+	return find, find.ANSI(buf, p)
+}
+
 // HTML writes to buf the HTML equivalent of BBS color codes with matching CSS color classes.
 // The first found color code format is used for the remainder of the Reader.
 func HTML(buf *bytes.Buffer, src io.Reader) (BBS, error) {
+	p, find, err := findAndRead(buf, src)
+	if err != nil {
+		return find, err
+	}
+	return find, find.HTML(buf, p)
+}
+
+func findAndRead(buf *bytes.Buffer, src io.Reader) ([]byte, BBS, error) {
 	if buf == nil {
-		return -1, ErrBuff
+		return nil, -1, ErrBuff
+	}
+	if src == nil {
+		return nil, -1, ErrReader
 	}
 
 	w := bytes.Buffer{}
@@ -407,10 +491,9 @@ func HTML(buf *bytes.Buffer, src io.Reader) (BBS, error) {
 
 	p, err := io.ReadAll(&w)
 	if err != nil {
-		return -1, fmt.Errorf("read all: %w", err)
+		return nil, -1, fmt.Errorf("read all: %w", err)
 	}
-
-	return find, find.HTML(buf, p)
+	return p, find, nil
 }
 
 // Bytes returns the BBS color toggle sequence.
@@ -468,33 +551,49 @@ func (b BBS) CSS(buf *bytes.Buffer) error {
 	return nil
 }
 
+// ANSI writes to buf the BBS color codes as ANSI SGR escape sequences.
+func (b BBS) ANSI(buf *bytes.Buffer, src []byte) error {
+	return b.render(buf, src, map[BBS]func(*bytes.Buffer, ...byte) error{
+		Celerity:  CelerityANSI,
+		PCBoard:   PCBoardANSI,
+		Renegade:  RenegadeANSI,
+		Telegard:  TelegardANSI,
+		Wildcat:   WildcatANSI,
+		WWIVHash:  WWIVHashANSI,
+		WWIVHeart: WWIVHeartANSI,
+	})
+}
+
 // HTML writes to buf the BBS color codes as CSS color classes within HTML <i> elements.
 func (b BBS) HTML(buf *bytes.Buffer, src []byte) error {
+	return b.render(buf, src, map[BBS]func(*bytes.Buffer, ...byte) error{
+		Celerity:  CelerityHTML,
+		PCBoard:   PCBoardHTML,
+		Renegade:  RenegadeHTML,
+		Telegard:  TelegardHTML,
+		Wildcat:   WildcatHTML,
+		WWIVHash:  WWIVHashHTML,
+		WWIVHeart: WWIVHeartHTML,
+	})
+}
+
+func (b BBS) render(
+	buf *bytes.Buffer,
+	src []byte,
+	renderers map[BBS]func(*bytes.Buffer, ...byte) error,
+) error {
 	if buf == nil {
 		return ErrBuff
 	}
-
-	trim := TrimControls(src...)
-	switch b {
-	case ANSI:
+	if b == ANSI {
 		return ErrANSI
-	case Celerity:
-		return CelerityHTML(buf, trim...)
-	case PCBoard:
-		return PCBoardHTML(buf, trim...)
-	case Renegade:
-		return RenegadeHTML(buf, trim...)
-	case Telegard:
-		return TelegardHTML(buf, trim...)
-	case Wildcat:
-		return WildcatHTML(buf, trim...)
-	case WWIVHash:
-		return WWIVHashHTML(buf, trim...)
-	case WWIVHeart:
-		return WWIVHeartHTML(buf, trim...)
-	default:
+	}
+	fn, ok := renderers[b]
+	if !ok {
 		return ErrNone
 	}
+	trim := TrimControls(src...)
+	return fn(buf, trim...)
 }
 
 // Name returns the name of the BBS color format.

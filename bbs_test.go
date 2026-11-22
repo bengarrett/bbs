@@ -682,3 +682,78 @@ func Test_Fields(t *testing.T) {
 		})
 	}
 }
+
+func Test_ToANSI(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		wantBBS bbs.BBS
+		want    string
+		wantErr bool
+	}{
+		{"empty", "", -1, "", true},
+		{"plain", "Hello World", -1, "", true},
+		{"existing ansi", "@CLS@" + ansiEsc + "31mHello", bbs.ANSI, "", true},
+		{"pcboard", "@CLS@@X1EHello\r\n@X4F!@PAUSE@", bbs.PCBoard, "\x1b[0;1;44;33mHello\r\n\x1b[0;1;41;37m!", false},
+		{"wildcat", "@04@Red", bbs.Wildcat, "\x1b[0;40;31mRed", false},
+		{"telegard", "`1FWhite", bbs.Telegard, "\x1b[0;1;44;37mWhite", false},
+		{"renegade", "|17|14Yellow|04Red", bbs.Renegade, "\x1b[0;44;37m\x1b[0;1;44;33mYellow\x1b[0;44;31mRed", false},
+		{"wwiv hash", "|#1Blue", bbs.WWIVHash, "\x1b[0;40;34mBlue", false},
+		{"wwiv heart", "\x034Red", bbs.WWIVHeart, "\x1b[0;40;31mRed", false},
+		{"celerity", "|bBlue|SSwap", bbs.Celerity, "\x1b[0;40;34mBlue\x1b[0;44;30mSwap", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var got bytes.Buffer
+			gotBBS, err := bbs.ToANSI(&got, strings.NewReader(tt.input))
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ToANSI() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if gotBBS != tt.wantBBS {
+				t.Errorf("ToANSI() bbs = %v, want %v", gotBBS, tt.wantBBS)
+			}
+			if got.String() != tt.want {
+				t.Errorf("ToANSI() = %q, want %q", got.String(), tt.want)
+			}
+		})
+	}
+
+	var buf bytes.Buffer
+	if _, err := bbs.ToANSI(nil, strings.NewReader("@X0FHi")); err == nil {
+		t.Error("ToANSI(nil, ...) expected error")
+	}
+	if _, err := bbs.ToANSI(&buf, nil); err == nil {
+		t.Error("ToANSI(..., nil) expected error")
+	}
+}
+
+func TestBBS_ANSIHelpers(t *testing.T) {
+	var buf bytes.Buffer
+	if err := bbs.PCBoardANSI(&buf, []byte("@X0EHi")...); err != nil || buf.String() != "\x1b[0;1;40;33mHi" {
+		t.Errorf("PCBoardANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.RenegadeANSI(&buf, []byte("|01Hi")...); err != nil || buf.String() != "\x1b[0;40;34mHi" {
+		t.Errorf("RenegadeANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.WildcatANSI(&buf, []byte("@04@Hi")...); err != nil || buf.String() != "\x1b[0;40;31mHi" {
+		t.Errorf("WildcatANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.TelegardANSI(&buf, []byte("`02Hi")...); err != nil || buf.String() != "\x1b[0;40;32mHi" {
+		t.Errorf("TelegardANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.WWIVHashANSI(&buf, []byte("|#1Hi")...); err != nil || buf.String() != "\x1b[0;40;34mHi" {
+		t.Errorf("WWIVHashANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.WWIVHeartANSI(&buf, []byte("\x034Hi")...); err != nil || buf.String() != "\x1b[0;40;31mHi" {
+		t.Errorf("WWIVHeartANSI = (%q, %v)", buf.String(), err)
+	}
+	buf.Reset()
+	if err := bbs.CelerityANSI(&buf, []byte("|gHi")...); err != nil || buf.String() != "\x1b[0;40;32mHi" {
+		t.Errorf("CelerityANSI = (%q, %v)", buf.String(), err)
+	}
+}
