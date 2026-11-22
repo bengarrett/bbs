@@ -1,0 +1,113 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+version: 2
+report_sizes: true
+project_name: bbs
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: bbs
+    main: ./cmd/bbs
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - linux
+      - windows
+      - darwin
+    ignore:
+      - goos: windows
+        goarch: '386'
+      - goos: windows
+        goarch: 'arm64'
+      - goos: linux
+        goarch: '386'
+      - goos: linux
+        goarch: 'arm64'
+
+  - id: wasi
+    main: ./cmd/bbs
+    binary: bbs
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - wasip1
+    goarch:
+      - wasm
+
+  - id: web
+    main: ./cmd/bbs-web
+    binary: bbs-web
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - js
+    goarch:
+      - wasm
+
+archives:
+  - id: native
+    ids:
+      - bbs
+    formats: ['tgz']
+    files:
+      - LICENSE
+      - README*
+    name_template: >-
+      bbs_ {{- if eq .Os "darwin" }} {{- if .Arm64 }}apple_silicon{{ else }}apple_intel_cpu{{ end }} {{- else }}{{ .Os }}{{ end -}}
+    format_overrides:
+      - goos: windows
+        formats: ['zip']
+
+  - id: wasm
+    ids:
+      - wasi
+      - web
+    name_template: '{{ .Binary }}_wasm_{{ .Version }}'
+    formats: ['tgz']
+    files:
+      - LICENSE
+      - README*
+
+nfpms:
+  - id: Linux
+    ids:
+      - bbs
+    package_name: 'bbs'
+    file_name_template: 'bbs'
+    vendor: Ben Garrett
+    homepage: https://github.com/bengarrett/bbs
+    maintainer: Ben Garrett <code.by.ben@gmail.com>
+    description: Convert legacy BBS color-coded textfiles to ANSI, HTML, PNG, or plain text
+    license: MIT
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+release:
+  footer: |-
+    ---
+
+    BBS uses standalone portable binaries, needs no dependencies, and requires no installation.
+
+    macOS and Linux users can install via Homebrew:
+
+    ```bash
+    brew tap bengarrett/bbs https://github.com/bengarrett/bbs
+    brew install bengarrett/bbs/bbs
+    ```
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

@@ -1,0 +1,79 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'cmd/bbs-web/**'
+      - 'web/**'
+      - 'static/**'
+      - 'internal/**'
+      - '*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/pages.yml'
+  workflow_run:
+    workflows:
+      - GoReleaser
+    types:
+      - completed
+  workflow_dispatch:
+
+# Permissions required to publish to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent concurrent deployments from conflicting
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+
+      - name: Build WebAssembly & Bundle Assets
+        run: |
+          set -euo pipefail
+          VER=$(git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
+          VER=${VER#v}
+
+          # 1. Compile in-browser WASM binary
+          GOOS=js GOARCH=wasm go build -trimpath -ldflags="-s -w -X main.version=${VER}" -o web/bbs-web.wasm ./cmd/bbs-web
+
+          # 2. Copy Go's official wasm_exec.js runtime bridge
+          cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" web/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'web/'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
