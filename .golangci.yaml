@@ -6,6 +6,7 @@ linters:
     - nlreturn
     - noinlineerr
     - paralleltest
+    - varnamelen
     - wsl_v5
     # retired
     - exhaustruct

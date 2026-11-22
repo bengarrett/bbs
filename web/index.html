@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BBS</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="wasm_exec.js"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="header-title">
+          <h1>BBS</h1>
+        </div>
+        <p class="subtitle">
+          Detect and convert legacy Bulletin Board System color-coded textfiles.
+          Save them as PNG images, HTML, ANSI encoded texts, or plain text.<br />
+          Supported BBS codes, PCBoard at, Renegade/Telegard pipes, Celerity,
+          Wildcat!, and WWIV.
+          <a
+            href="https://github.com/bengarrett/bbs"
+            target="_blank"
+            rel="noopener"
+            >BBS is also available as a terminal app and a Go package.</a
+          >
+        </p>
+        <code id="wasmStatus">Loading WASM...</code>
+      </header>
+
+      <main class="grid">
+        <section class="card input-section">
+          <form id="bbsForm">
+            <h2>Select</h2>
+            <div id="dropzone" class="dropzone">
+              <input type="file" id="filePicker" />
+              <div class="dropzone-prompt">
+                <svg
+                  class="icon"
+                  viewBox="0 0 24 24"
+                  width="36"
+                  height="36"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+                  />
+                </svg>
+                <p>
+                  <strong><span class="browse-link">Browse</span>,</strong>
+                  or drag &amp; drop a BBS textfile
+                </p>
+              </div>
+              <div id="selectedFileInfo" class="file-info hidden"></div>
+            </div>
+            <br />
+            <h2>Configure</h2>
+            <p class="section-note">
+              <em>HTML output always saves to UTF-8</em>
+            </p>
+            <div class="controls-grid">
+              <div class="control-group">
+                <label for="format">Output format</label>
+                <select id="format">
+                  <option value="html" selected>HTML</option>
+                  <option value="png">PNG image</option>
+                  <option value="ansi">ANSI text</option>
+                  <option value="strip">Plain text</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="bbsKind">BBS code format</label>
+                <select id="bbsKind">
+                  <option value="auto" selected>Auto-detect</option>
+                  <option value="pcboard">PCBoard (@X)</option>
+                  <option value="renegade">Renegade (|00)</option>
+                  <option value="celerity">Celerity (|k)</option>
+                  <option value="wildcat">Wildcat! (@@)</option>
+                  <option value="telegard">Telegard (`)</option>
+                  <option value="wwivhash">WWIV (#)</option>
+                  <option value="wwivheart">WWIV (♥)</option>
+                </select>
+              </div>
+
+              <div class="control-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="utf8" />
+                  <span
+                    >Decode
+                    <a
+                      class="browse-link"
+                      href="https://en.wikipedia.org/wiki/Code_page_437"
+                      >CP437</a
+                    >
+                    to UTF-8</span
+                  >
+                </label>
+              </div>
+
+              <div class="control-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="css" checked />
+                  <span>Embed stylesheet in downloaded HTML</span>
+                </label>
+              </div>
+
+              <div class="control-group checkbox-group">
+                <label>
+                  <input type="checkbox" id="unlock" />
+                  <span>Unlock 80 columns</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="reset" id="resetBtn" class="btn btn-secondary">
+                Reset
+              </button>
+            </div>
+            <div id="statusMessage" class="status-message hidden"></div>
+          </form>
+        </section>
+
+        <section class="card preview-section">
+          <h2>Preview and download</h2>
+          <div id="previewContainer" class="preview-container empty">
+            <div class="preview-placeholder">
+              <p>
+                Upload a BBS color textfile above to preview and download the
+                converted output.
+              </p>
+            </div>
+            <pre id="previewOutput" class="preview-output hidden"></pre>
+            <img
+              id="previewImage"
+              class="preview-image hidden"
+              alt="PNG Preview"
+            />
+          </div>
+
+          <div id="resultMeta" class="result-meta hidden">
+            <div class="meta-row">
+              <span>Detected BBS:</span> <strong id="metaDetected">-</strong>
+            </div>
+            <div class="meta-row">
+              <span>Input size:</span> <strong id="metaInputSize">-</strong>
+            </div>
+            <div class="meta-row">
+              <span>Output size:</span> <strong id="metaOutputSize">-</strong>
+            </div>
+            <div class="meta-row">
+              <span>Convert time:</span> <strong id="metaTime">-</strong>
+            </div>
+            <div class="download-actions">
+              <a
+                id="downloadBtn"
+                class="btn btn-success"
+                download="output.html"
+              >
+                Download output
+              </a>
+              <button type="button" id="copyBtn" class="btn btn-secondary">
+                Copy text
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p class="subtitle">
+          Try a <a id="sampleLink" href="#sample">sample PCBoard screen</a>, or
+          browse real BBS files on
+          <a href="https://defacto2.net/files/pcboard-text">Defacto2</a>.
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

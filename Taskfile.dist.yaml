@@ -7,12 +7,30 @@
 # $ task --list
 #
 version: '3'
+vars:
+  VER:
+    sh: git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || git rev-parse --short HEAD
 tasks:
   default:
     desc: 'Task runner for the bbs package.'
     cmds:
       - task --list-all
     silent: true
+  build:
+    desc: 'Build the bbs binary.'
+    cmds:
+      - go build -v -trimpath -ldflags="-s -w -X main.version={{.VER}}" -o bbs ./cmd/bbs
+  build-wasm:
+    desc: 'Build the bbs WASM binaries.'
+    cmds:
+      - cmd: GOOS=wasip1 GOARCH=wasm go build -v -trimpath -ldflags="-s -w -X main.version={{.VER}}" -o bbs.wasm ./cmd/bbs
+      - cmd: GOOS=js GOARCH=wasm go build -v -trimpath -ldflags="-s -w -X main.version={{.VER}}" -o bbs-web.wasm ./cmd/bbs-web
+  serve:
+    desc: 'Run a local HTTP server for web/.'
+    cmds:
+      - cmd: GOOS=js GOARCH=wasm go build -v -trimpath -ldflags="-s -w -X main.version={{.VER}}" -o web/bbs-web.wasm ./cmd/bbs-web
+      - cmd: cp "$(go env GOROOT)/lib/wasm/wasm_exec.js" web/
+      - cmd: go run web/serve.go
   doc:
     desc: 'Generate and browse the application module documentation.'
     cmds:
@@ -28,6 +46,17 @@ tasks:
       - cmd: go fix ./...
       - cmd: gofumpt -l -w .
       - cmd: golangci-lint run -c .golangci.yaml
+  lint-js:
+    silent: false
+    desc: Lint the CSS and JS.
+    ignore_error: true
+    dir: web
+    cmds:
+      - cmd: clear
+        platforms: [linux, darwin, freebsd]
+      - cmd: pnpm exec eslint .
+      - cmd: pnpm exec stylelint --fix *.css
+      - cmd: pnpm exec htmlhint *.html
   nil:
     desc: 'Run the static analysis techniques to catch Nil dereferences.'
     cmds:
@@ -51,6 +80,11 @@ tasks:
       - cmd: go get go.uber.org/nilaway/cmd/nilaway@latest
       - cmd: go mod verify
       - cmd: go mod tidy
+  pkg-js:
+    desc: Update to the latest JS dependencies.
+    dir: web
+    cmds:
+      - cmd: pnpm up --interactive --latest
   test:
     desc: 'Run the test suite.'
     cmds:
@@ -59,3 +93,7 @@ tasks:
     desc: 'Run the test suite with the slower race detection.'
     cmds:
       - go test -count 1 -race ./...
+  testc:
+    desc: 'Run the test suite with coverage output to the browser.'
+    cmds:
+      - go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out

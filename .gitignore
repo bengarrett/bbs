@@ -4,6 +4,11 @@
 *.dll
 *.so
 *.dylib
+*.wasm
+/web/ansimate-web.wasm
+/web/wasm_exec.js
+node_modules/
+/bbs
 
 # Test binary, built with `go test -c`
 *.test

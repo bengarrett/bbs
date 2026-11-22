@@ -125,7 +125,8 @@ const celerityCodes = "kbgcrmywdBGCRMYWS"
 
 // CelerityANSI writes to buf the ANSI SGR equivalent of Celerity BBS color codes.
 func CelerityANSI(buf *bytes.Buffer, src ...byte) error {
-	if err := split.CelerityANSI(buf, src); err != nil {
+	wrapped := Wrap(Celerity, Columns, src...)
+	if err := split.CelerityANSI(buf, wrapped); err != nil {
 		return fmt.Errorf("celerity ansi: %w", err)
 	}
 	return nil
@@ -134,7 +135,8 @@ func CelerityANSI(buf *bytes.Buffer, src ...byte) error {
 // CelerityHTML writes to buf the HTML equivalent of Celerity BBS color codes with
 // matching CSS color classes.
 func CelerityHTML(buf *bytes.Buffer, src ...byte) error {
-	if err := split.CelerityHTML(buf, src); err != nil {
+	wrapped := Wrap(Celerity, Columns, src...)
+	if err := split.CelerityHTML(buf, wrapped); err != nil {
 		return fmt.Errorf("celerity html: %w", err)
 	}
 	return nil
@@ -142,7 +144,8 @@ func CelerityHTML(buf *bytes.Buffer, src ...byte) error {
 
 // RenegadeANSI writes to buf the ANSI SGR equivalent of Renegade BBS color codes.
 func RenegadeANSI(buf *bytes.Buffer, src ...byte) error {
-	if err := split.VBarsANSI(buf, src); err != nil {
+	wrapped := Wrap(Renegade, Columns, src...)
+	if err := split.VBarsANSI(buf, wrapped); err != nil {
 		return fmt.Errorf("renegade ansi: %w", err)
 	}
 	return nil
@@ -151,7 +154,8 @@ func RenegadeANSI(buf *bytes.Buffer, src ...byte) error {
 // RenegadeHTML writes to buf the HTML equivalent of Renegade BBS color codes with
 // matching CSS color classes.
 func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
-	if err := split.VBarsHTML(buf, src); err != nil {
+	wrapped := Wrap(Renegade, Columns, src...)
+	if err := split.VBarsHTML(buf, wrapped); err != nil {
 		return fmt.Errorf("renegade html: %w", err)
 	}
 	return nil
@@ -159,7 +163,8 @@ func RenegadeHTML(buf *bytes.Buffer, src ...byte) error {
 
 // WildcatANSI writes to buf the ANSI SGR equivalent of Wildcat! BBS color codes.
 func WildcatANSI(buf *bytes.Buffer, src ...byte) error {
-	p := wildcatRe.ReplaceAll(src, []byte(`@X$1$2`))
+	wrapped := Wrap(Wildcat, Columns, src...)
+	p := wildcatRe.ReplaceAll(wrapped, []byte(`@X$1$2`))
 	if err := split.PCBoardANSI(buf, p); err != nil {
 		return fmt.Errorf("wildcat ansi: %w", err)
 	}
@@ -169,7 +174,8 @@ func WildcatANSI(buf *bytes.Buffer, src ...byte) error {
 // WildcatHTML writes to buf the HTML equivalent of Wildcat! BBS color codes with
 // matching CSS color classes.
 func WildcatHTML(buf *bytes.Buffer, src ...byte) error {
-	p := wildcatRe.ReplaceAll(src, []byte(`@X$1$2`))
+	wrapped := Wrap(Wildcat, Columns, src...)
+	p := wildcatRe.ReplaceAll(wrapped, []byte(`@X$1$2`))
 	if err := split.PCBoardHTML(buf, p); err != nil {
 		return fmt.Errorf("wildcat html: %w", err)
 	}
@@ -281,7 +287,8 @@ func IsWildcat(src []byte) bool {
 
 // PCBoardANSI writes to buf the ANSI SGR equivalent of PCBoard BBS color codes.
 func PCBoardANSI(buf *bytes.Buffer, src ...byte) error {
-	if err := split.PCBoardANSI(buf, src); err != nil {
+	wrapped := Wrap(PCBoard, Columns, src...)
+	if err := split.PCBoardANSI(buf, wrapped); err != nil {
 		return fmt.Errorf("pcboard ansi: %w", err)
 	}
 	return nil
@@ -290,7 +297,8 @@ func PCBoardANSI(buf *bytes.Buffer, src ...byte) error {
 // PCBoardHTML writes to buf the HTML equivalent of PCBoard BBS color codes with
 // matching CSS color classes.
 func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
-	if err := split.PCBoardHTML(buf, src); err != nil {
+	wrapped := Wrap(PCBoard, Columns, src...)
+	if err := split.PCBoardHTML(buf, wrapped); err != nil {
 		return fmt.Errorf("pcboard html: %w", err)
 	}
 	return nil
@@ -298,7 +306,8 @@ func PCBoardHTML(buf *bytes.Buffer, src ...byte) error {
 
 // TelegardANSI writes to buf the ANSI SGR equivalent of Telegard BBS color codes.
 func TelegardANSI(buf *bytes.Buffer, src ...byte) error {
-	p := telegardRe.ReplaceAll(src, []byte(`@X$1$2`))
+	wrapped := Wrap(Telegard, Columns, src...)
+	p := telegardRe.ReplaceAll(wrapped, []byte(`@X$1$2`))
 	if err := split.PCBoardANSI(buf, p); err != nil {
 		return fmt.Errorf("telegard ansi: %w", err)
 	}
@@ -308,7 +317,8 @@ func TelegardANSI(buf *bytes.Buffer, src ...byte) error {
 // TelegardHTML writes to buf the HTML equivalent of Telegard BBS color codes with
 // matching CSS color classes.
 func TelegardHTML(buf *bytes.Buffer, src ...byte) error {
-	p := telegardRe.ReplaceAll(src, []byte(`@X$1$2`))
+	wrapped := Wrap(Telegard, Columns, src...)
+	p := telegardRe.ReplaceAll(wrapped, []byte(`@X$1$2`))
 	if err := split.PCBoardHTML(buf, p); err != nil {
 		return fmt.Errorf("telegard html: %w", err)
 	}
@@ -324,7 +334,8 @@ func TrimControls(src ...byte) []byte {
 
 // WWIVHashANSI writes to buf the ANSI SGR equivalent of WWIV BBS hash (#) color codes.
 func WWIVHashANSI(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
+	wrapped := Wrap(WWIVHash, Columns, src...)
+	p := wwivHashRe.ReplaceAll(wrapped, []byte(`|0$1`))
 	if err := split.VBarsANSI(buf, p); err != nil {
 		return fmt.Errorf("wwiv hash ansi: %w", err)
 	}
@@ -334,7 +345,8 @@ func WWIVHashANSI(buf *bytes.Buffer, src ...byte) error {
 // WWIVHashHTML writes to buf the HTML equivalent of WWIV BBS hash (#) color codes with
 // matching CSS color classes.
 func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
+	wrapped := Wrap(WWIVHash, Columns, src...)
+	p := wwivHashRe.ReplaceAll(wrapped, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv hash html: %w", err)
 	}
@@ -343,7 +355,8 @@ func WWIVHashHTML(buf *bytes.Buffer, src ...byte) error {
 
 // WWIVHeartANSI writes to buf the ANSI SGR equivalent of WWIV BBS heart (♥) color codes.
 func WWIVHeartANSI(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHeartRe.ReplaceAll(src, []byte(`|0$1`))
+	wrapped := Wrap(WWIVHeart, Columns, src...)
+	p := wwivHeartRe.ReplaceAll(wrapped, []byte(`|0$1`))
 	if err := split.VBarsANSI(buf, p); err != nil {
 		return fmt.Errorf("wwiv heart ansi: %w", err)
 	}
@@ -353,7 +366,8 @@ func WWIVHeartANSI(buf *bytes.Buffer, src ...byte) error {
 // WWIVHeartHTML writes to buf the HTML equivalent of WWIV BBS heart (♥) color codes with
 // matching CSS color classes.
 func WWIVHeartHTML(buf *bytes.Buffer, src ...byte) error {
-	p := wwivHeartRe.ReplaceAll(src, []byte(`|0$1`))
+	wrapped := Wrap(WWIVHeart, Columns, src...)
+	p := wwivHeartRe.ReplaceAll(wrapped, []byte(`|0$1`))
 	if err := split.VBarsHTML(buf, p); err != nil {
 		return fmt.Errorf("wwiv heart html: %w", err)
 	}
@@ -460,21 +474,31 @@ func Find(r io.Reader) BBS {
 // ToANSI writes to buf the ANSI SGR equivalent of BBS color codes.
 // The first found color code format is used for the remainder of the Reader.
 func ToANSI(buf *bytes.Buffer, src io.Reader) (BBS, error) {
+	return ToANSIOptions(buf, src, Options{})
+}
+
+// ToANSIOptions writes to buf the ANSI SGR equivalent of BBS color codes using opts.
+func ToANSIOptions(buf *bytes.Buffer, src io.Reader, opts Options) (BBS, error) {
 	p, find, err := findAndRead(buf, src)
 	if err != nil {
 		return find, err
 	}
-	return find, find.ANSI(buf, p)
+	return find, find.ANSIOptions(buf, p, opts)
 }
 
 // HTML writes to buf the HTML equivalent of BBS color codes with matching CSS color classes.
 // The first found color code format is used for the remainder of the Reader.
 func HTML(buf *bytes.Buffer, src io.Reader) (BBS, error) {
+	return HTMLOptions(buf, src, Options{})
+}
+
+// HTMLOptions writes to buf the HTML equivalent of BBS color codes using opts.
+func HTMLOptions(buf *bytes.Buffer, src io.Reader, opts Options) (BBS, error) {
 	p, find, err := findAndRead(buf, src)
 	if err != nil {
 		return find, err
 	}
-	return find, find.HTML(buf, p)
+	return find, find.HTMLOptions(buf, p, opts)
 }
 
 func findAndRead(buf *bytes.Buffer, src io.Reader) ([]byte, BBS, error) {
@@ -553,27 +577,29 @@ func (b BBS) CSS(buf *bytes.Buffer) error {
 
 // ANSI writes to buf the BBS color codes as ANSI SGR escape sequences.
 func (b BBS) ANSI(buf *bytes.Buffer, src []byte) error {
-	return b.render(buf, src, map[BBS]func(*bytes.Buffer, ...byte) error{
-		Celerity:  CelerityANSI,
-		PCBoard:   PCBoardANSI,
-		Renegade:  RenegadeANSI,
-		Telegard:  TelegardANSI,
-		Wildcat:   WildcatANSI,
-		WWIVHash:  WWIVHashANSI,
-		WWIVHeart: WWIVHeartANSI,
+	return b.ANSIOptions(buf, src, Options{})
+}
+
+// ANSIOptions writes to buf the BBS color codes as ANSI SGR escape sequences using opts.
+func (b BBS) ANSIOptions(buf *bytes.Buffer, src []byte, opts Options) error {
+	return b.render(buf, src, opts, rendererSet{
+		celerity: split.CelerityANSI,
+		pcboard:  split.PCBoardANSI,
+		vbars:    split.VBarsANSI,
 	})
 }
 
 // HTML writes to buf the BBS color codes as CSS color classes within HTML <i> elements.
 func (b BBS) HTML(buf *bytes.Buffer, src []byte) error {
-	return b.render(buf, src, map[BBS]func(*bytes.Buffer, ...byte) error{
-		Celerity:  CelerityHTML,
-		PCBoard:   PCBoardHTML,
-		Renegade:  RenegadeHTML,
-		Telegard:  TelegardHTML,
-		Wildcat:   WildcatHTML,
-		WWIVHash:  WWIVHashHTML,
-		WWIVHeart: WWIVHeartHTML,
+	return b.HTMLOptions(buf, src, Options{})
+}
+
+// HTMLOptions writes to buf the BBS color codes as CSS color classes using opts.
+func (b BBS) HTMLOptions(buf *bytes.Buffer, src []byte, opts Options) error {
+	return b.render(buf, src, opts, rendererSet{
+		celerity: split.CelerityHTML,
+		pcboard:  split.PCBoardHTML,
+		vbars:    split.VBarsHTML,
 	})
 }
 
@@ -597,27 +623,33 @@ func (b BBS) Name() string {
 
 // Remove the BBS color codes from src and write it to buf.
 func (b BBS) Remove(buf *bytes.Buffer, src ...byte) error {
+	return b.RemoveOptions(buf, Options{}, src...)
+}
+
+// RemoveOptions removes the BBS color codes from src and writes it to buf using opts.
+func (b BBS) RemoveOptions(buf *bytes.Buffer, opts Options, src ...byte) error {
 	if buf == nil {
 		return ErrBuff
 	}
 
+	wrapped := Wrap(b, opts.wrapWidth(), src...)
 	switch b {
 	case ANSI:
 		return ErrANSI
 	case Celerity:
-		return remove(buf, src, celerityRe)
+		return remove(buf, wrapped, celerityRe)
 	case PCBoard:
-		return remove(buf, src, pcboardRe)
+		return remove(buf, wrapped, pcboardRe)
 	case Renegade:
-		return remove(buf, src, renegadeRe)
+		return remove(buf, wrapped, renegadeRe)
 	case Telegard:
-		return remove(buf, src, telegardRe)
+		return remove(buf, wrapped, telegardRe)
 	case Wildcat:
-		return remove(buf, src, wildcatRe)
+		return remove(buf, wrapped, wildcatRe)
 	case WWIVHash:
-		return remove(buf, src, wwivHashRe)
+		return remove(buf, wrapped, wwivHashRe)
 	case WWIVHeart:
-		return remove(buf, src, wwivHeartRe)
+		return remove(buf, wrapped, wwivHeartRe)
 	default:
 		return ErrNone
 	}
@@ -671,10 +703,34 @@ func (b BBS) Valid() bool {
 	}
 }
 
+type rendererSet struct {
+	celerity func(*bytes.Buffer, []byte) error
+	pcboard  func(*bytes.Buffer, []byte) error
+	vbars    func(*bytes.Buffer, []byte) error
+}
+
+func (b BBS) normalize(src []byte) (BBS, []byte) {
+	switch b {
+	case Telegard:
+		return PCBoard, telegardRe.ReplaceAll(src, []byte(`@X$1$2`))
+	case Wildcat:
+		return PCBoard, wildcatRe.ReplaceAll(src, []byte(`@X$1$2`))
+	case WWIVHash:
+		return Renegade, wwivHashRe.ReplaceAll(src, []byte(`|0$1`))
+	case WWIVHeart:
+		return Renegade, wwivHeartRe.ReplaceAll(src, []byte(`|0$1`))
+	case ANSI, Celerity, Renegade, PCBoard:
+		return b, src
+	default:
+		return b, src
+	}
+}
+
 func (b BBS) render(
 	buf *bytes.Buffer,
 	src []byte,
-	renderers map[BBS]func(*bytes.Buffer, ...byte) error,
+	opts Options,
+	set rendererSet,
 ) error {
 	if buf == nil {
 		return ErrBuff
@@ -682,10 +738,23 @@ func (b BBS) render(
 	if b == ANSI {
 		return ErrANSI
 	}
-	fn, ok := renderers[b]
-	if !ok {
+	if !b.Valid() {
 		return ErrNone
 	}
+
 	trim := TrimControls(src...)
-	return fn(buf, trim...)
+	wrapped := Wrap(b, opts.wrapWidth(), trim...)
+	base, data := b.normalize(wrapped)
+	switch base {
+	case Celerity:
+		return set.celerity(buf, data)
+	case PCBoard:
+		return set.pcboard(buf, data)
+	case Renegade:
+		return set.vbars(buf, data)
+	case ANSI, Wildcat, Telegard, WWIVHash, WWIVHeart:
+		return ErrNone
+	default:
+		return ErrNone
+	}
 }

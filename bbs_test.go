@@ -757,3 +757,55 @@ func TestBBS_ANSIHelpers(t *testing.T) {
 		t.Errorf("CelerityANSI = (%q, %v)", buf.String(), err)
 	}
 }
+
+func Test_Wrap80AndUnlock(t *testing.T) {
+	// 80 visible 'A's + 5 'B's interleaved with @X0F codes, using CRLF line breaks.
+	line80Plus := "@X0F" + strings.Repeat("A", 40) + "@X0E" + strings.Repeat("A", 40) + "BBBBB\r\n"
+
+	var locked bytes.Buffer
+	kind, err := bbs.HTMLOptions(&locked, strings.NewReader(line80Plus), bbs.Options{})
+	if err != nil {
+		t.Fatalf("HTMLOptions(locked) error = %v", err)
+	}
+	if kind != bbs.PCBoard {
+		t.Fatalf("kind = %v, want PCBoard", kind)
+	}
+	wantLocked := `<i class="PB0 PFF">` + strings.Repeat("A", 40) + `</i>` +
+		`<i class="PB0 PFE">` + strings.Repeat("A", 40) + "\r\nBBBBB\r\n</i>"
+	if locked.String() != wantLocked {
+		t.Errorf("locked HTML = %q, want %q", locked.String(), wantLocked)
+	}
+
+	// Exact 80 visible chars followed by CRLF does not insert a blank line.
+	exact80 := "@X0F" + strings.Repeat("A", 80) + "\r\nNEXT"
+	var exactBuf bytes.Buffer
+	if err := bbs.PCBoardHTML(&exactBuf, []byte(exact80)...); err != nil {
+		t.Fatalf("PCBoardHTML(exact80) error = %v", err)
+	}
+	wantExact := `<i class="PB0 PFF">` + strings.Repeat("A", 80) + "\r\nNEXT</i>"
+	if exactBuf.String() != wantExact {
+		t.Errorf("exact80 HTML = %q, want %q", exactBuf.String(), wantExact)
+	}
+
+	// UTF-8 multi-byte runes count as 1 visible column each.
+	utf8Line := "@X0F" + strings.Repeat("█", 80) + "!"
+	var utf8Locked bytes.Buffer
+	if err := bbs.PCBoardHTML(&utf8Locked, []byte(utf8Line)...); err != nil {
+		t.Fatalf("PCBoardHTML(utf8) error = %v", err)
+	}
+	wantUTF8 := `<i class="PB0 PFF">` + strings.Repeat("█", 80) + "\n!</i>"
+	if utf8Locked.String() != wantUTF8 {
+		t.Errorf("utf8 wrapped HTML = %q, want %q", utf8Locked.String(), wantUTF8)
+	}
+
+	// Unlock: true disables 80-column wrapping.
+	var unlocked bytes.Buffer
+	if _, err := bbs.HTMLOptions(&unlocked, strings.NewReader(line80Plus), bbs.Options{Unlock: true}); err != nil {
+		t.Fatalf("HTMLOptions(unlock) error = %v", err)
+	}
+	wantUnlocked := `<i class="PB0 PFF">` + strings.Repeat("A", 40) + `</i>` +
+		`<i class="PB0 PFE">` + strings.Repeat("A", 40) + "BBBBB\r\n</i>"
+	if unlocked.String() != wantUnlocked {
+		t.Errorf("unlocked HTML = %q, want %q", unlocked.String(), wantUnlocked)
+	}
+}
