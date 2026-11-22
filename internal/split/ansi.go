@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/bengarrett/bbs/internal/pattern"
 )
@@ -133,7 +134,7 @@ func writeRaw(buf *bytes.Buffer, src []byte) error {
 func celerityIndex(code byte) (int, bool) {
 	// Matches Celerity CGA color order: k,b,g,c,r,m,y,w,d,B,G,C,R,M,Y,W.
 	const palette = "kbgcrmywdBGCRMYW"
-	idx := bytes.IndexByte([]byte(palette), code)
+	idx := strings.IndexByte(palette, code)
 	if idx < 0 {
 		return 0, false
 	}

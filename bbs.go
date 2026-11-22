@@ -577,25 +577,6 @@ func (b BBS) HTML(buf *bytes.Buffer, src []byte) error {
 	})
 }
 
-func (b BBS) render(
-	buf *bytes.Buffer,
-	src []byte,
-	renderers map[BBS]func(*bytes.Buffer, ...byte) error,
-) error {
-	if buf == nil {
-		return ErrBuff
-	}
-	if b == ANSI {
-		return ErrANSI
-	}
-	fn, ok := renderers[b]
-	if !ok {
-		return ErrNone
-	}
-	trim := TrimControls(src...)
-	return fn(buf, trim...)
-}
-
 // Name returns the name of the BBS color format.
 func (b BBS) Name() string {
 	if !b.Valid() {
@@ -688,4 +669,23 @@ func (b BBS) Valid() bool {
 	default:
 		return false
 	}
+}
+
+func (b BBS) render(
+	buf *bytes.Buffer,
+	src []byte,
+	renderers map[BBS]func(*bytes.Buffer, ...byte) error,
+) error {
+	if buf == nil {
+		return ErrBuff
+	}
+	if b == ANSI {
+		return ErrANSI
+	}
+	fn, ok := renderers[b]
+	if !ok {
+		return ErrNone
+	}
+	trim := TrimControls(src...)
+	return fn(buf, trim...)
 }
