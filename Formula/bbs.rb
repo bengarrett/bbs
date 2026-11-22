@@ -1,9 +1,9 @@
 class Bbs < Formula
   desc "Convert legacy BBS color-coded textfiles to ANSI, HTML, PNG, or plain text"
   homepage "https://github.com/bengarrett/bbs"
-  url "https://github.com/bengarrett/bbs/archive/refs/tags/v1.0.11.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
-  version "1.0.11"
+  url "https://github.com/bengarrett/bbs/archive/refs/tags/v1.1.0.tar.gz"
+  sha256 "f9a5569adfc1da232d4ec4c74d58d654d5c8deebb21f8d56aca09bf8259c3370"
+  version "1.1.0"
   license "MIT"
 
   livecheck do
