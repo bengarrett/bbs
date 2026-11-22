@@ -1,18 +1,18 @@
 :root {
   --black: rgb(0, 0, 0);
-  --blue: rgb(0, 0, 128);
-  --green: rgb(0, 128, 0);
+  --blue: rgb(0, 0, 170);
+  --green: rgb(0, 170, 0);
   --cyan: rgb(0, 170, 170);
-  --red: rgb(128, 0, 0);
+  --red: rgb(170, 0, 0);
   --magenta: rgb(170, 0, 170);
   --brown: rgb(170, 85, 0);
   --grey: rgb(170, 170, 170);
   --darkgrey: rgb(85, 85, 85);
-  --lightblue: rgb(0, 0, 255);
-  --lightgreen: rgb(0, 255, 0);
-  --lightcyan: rgb(0, 255, 255);
-  --lightred: rgb(255, 0, 0);
-  --lightmagenta: rgb(255, 0, 255);
+  --lightblue: rgb(85, 85, 255);
+  --lightgreen: rgb(85, 255, 85);
+  --lightcyan: rgb(85, 255, 255);
+  --lightred: rgb(255, 85, 85);
+  --lightmagenta: rgb(255, 85, 255);
   --yellow: rgb(255, 255, 85);
   --white: rgb(255, 255, 255);
 }

@@ -106,7 +106,10 @@ func TestCLIConvertFormatsAndIO(t *testing.T) {
 		t.Fatal(err)
 	}
 	htmlStr := string(htmlBytes)
-	if !strings.Contains(htmlStr, "<style>") || !strings.Contains(htmlStr, `<i class="PB1 PFE">█Hello</i>`) {
+	if !strings.Contains(htmlStr, "<!doctype html>") ||
+		!strings.Contains(htmlStr, "--black: rgb(0, 0, 0);") ||
+		!strings.Contains(htmlStr, `<pre><i class="PB1 PFE">█Hello</i></pre>`) ||
+		strings.Contains(htmlStr, "@import ") {
 		t.Errorf("unexpected html output: %q", htmlStr)
 	}
 

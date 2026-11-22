@@ -47,6 +47,19 @@
     utf8Checkbox.disabled = isHTML || isPNG;
   }
 
+  function applyDynamicCSS(kind = 'pcboard') {
+    if (!wasmReady || typeof globalThis.bbs?.css !== 'function') return;
+    let styleEl = document.getElementById('bbsDynamicStyle');
+    if (!styleEl && document.head) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'bbsDynamicStyle';
+      document.head.appendChild(styleEl);
+    }
+    if (styleEl) {
+      styleEl.textContent = globalThis.bbs.css(kind);
+    }
+  }
+
   async function initWasm() {
     try {
       const response = await fetch('bbs-web.wasm');
@@ -61,6 +74,7 @@
       );
       go.run(instance);
       wasmReady = true;
+      applyDynamicCSS('pcboard');
       wasmStatus.textContent = 'Ready v' + globalThis.bbs.version();
       if (currentFileBytes) triggerConvert();
     } catch (err) {
@@ -166,6 +180,9 @@
       let mime = 'text/plain;charset=utf-8';
 
       if (format === 'html') {
+        const activeKind =
+          opts.bbs === 'auto' ? info.name || 'pcboard' : opts.bbs;
+        applyDynamicCSS(activeKind);
         const html = await globalThis.bbs.toHTML(currentFileBytes, opts);
         lastTextOutput = html;
         previewImage.classList.add('hidden');

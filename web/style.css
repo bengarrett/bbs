@@ -10,24 +10,6 @@
   --success-hover: #16a34a;
   --danger: #ef4444;
   --radius: 8px;
-
-  /* VGA / BBS colors */
-  --black: rgb(0 0 0);
-  --blue: rgb(0 0 128);
-  --green: rgb(0 128 0);
-  --cyan: rgb(0 170 170);
-  --red: rgb(128 0 0);
-  --magenta: rgb(170 0 170);
-  --brown: rgb(170 85 0);
-  --grey: rgb(170 170 170);
-  --darkgrey: rgb(85 85 85);
-  --lightblue: rgb(0 0 255);
-  --lightgreen: rgb(0 255 0);
-  --lightcyan: rgb(0 255 255);
-  --lightred: rgb(255 0 0);
-  --lightmagenta: rgb(255 0 255);
-  --yellow: rgb(255 255 85);
-  --white: rgb(255 255 255);
 }
 
 * {
@@ -307,9 +289,11 @@ select:focus {
 .preview-output {
   width: 100%;
   margin: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.95rem;
-  line-height: 1.25;
+  font-family:
+    'IBM VGA 8x16', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  font-size: 16px;
+  line-height: 16px;
   color: var(--grey);
   white-space: pre;
 }
@@ -323,146 +307,6 @@ select:focus {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-
-/* stylelint-disable selector-class-pattern */
-.preview-output i {
-  font-style: normal;
-}
-
-.preview-output i.PF0,
-.preview-output i.P0 {
-  color: var(--black);
-}
-
-.preview-output i.PF1,
-.preview-output i.P1 {
-  color: var(--blue);
-}
-
-.preview-output i.PF2,
-.preview-output i.P2 {
-  color: var(--green);
-}
-
-.preview-output i.PF3,
-.preview-output i.P3 {
-  color: var(--cyan);
-}
-
-.preview-output i.PF4,
-.preview-output i.P4 {
-  color: var(--red);
-}
-
-.preview-output i.PF5,
-.preview-output i.P5 {
-  color: var(--magenta);
-}
-
-.preview-output i.PF6,
-.preview-output i.P6 {
-  color: var(--brown);
-}
-
-.preview-output i.PF7,
-.preview-output i.P7 {
-  color: var(--grey);
-}
-
-.preview-output i.PF8,
-.preview-output i.P8 {
-  color: var(--darkgrey);
-}
-
-.preview-output i.PF9,
-.preview-output i.P9 {
-  color: var(--lightblue);
-}
-
-.preview-output i.PFA,
-.preview-output i.P10 {
-  color: var(--lightgreen);
-}
-
-.preview-output i.PFB,
-.preview-output i.P11 {
-  color: var(--lightcyan);
-}
-
-.preview-output i.PFC,
-.preview-output i.P12 {
-  color: var(--lightred);
-}
-
-.preview-output i.PFD,
-.preview-output i.P13 {
-  color: var(--lightmagenta);
-}
-
-.preview-output i.PFE,
-.preview-output i.P14 {
-  color: var(--yellow);
-}
-
-.preview-output i.PFF,
-.preview-output i.P15 {
-  color: var(--white);
-}
-
-.preview-output i.PB0 {
-  background-color: transparent;
-}
-
-.preview-output i.PB1,
-.preview-output i.PB9,
-.preview-output i.P17 {
-  background-color: var(--blue);
-}
-
-.preview-output i.PB2,
-.preview-output i.PBA,
-.preview-output i.P18 {
-  background-color: var(--green);
-}
-
-.preview-output i.PB3,
-.preview-output i.PBB,
-.preview-output i.P19 {
-  background-color: var(--cyan);
-}
-
-.preview-output i.PB4,
-.preview-output i.PBC,
-.preview-output i.P20 {
-  background-color: var(--red);
-}
-
-.preview-output i.PB5,
-.preview-output i.PBD,
-.preview-output i.P21 {
-  background-color: var(--magenta);
-}
-
-.preview-output i.PB6,
-.preview-output i.PBE,
-.preview-output i.P22 {
-  background-color: var(--brown);
-}
-
-.preview-output i.PB7,
-.preview-output i.PBF {
-  background-color: var(--grey);
-}
-
-.preview-output i.PB8,
-.preview-output i.P16 {
-  background-color: var(--black);
-}
-
-.preview-output i.P23 {
-  background-color: var(--white);
-}
-/* stylelint-enable selector-class-pattern */
 
 .result-meta {
   margin-top: 16px;

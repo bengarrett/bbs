@@ -330,11 +330,10 @@ func prepareSource(
 
 func convertHTML(buf *bytes.Buffer, kind bbs.BBS, src []byte, opts bbs.Options, withCSS bool) error {
 	if withCSS {
-		buf.WriteString("<style>\n")
-		if err := kind.CSS(buf); err != nil {
-			return fmt.Errorf("write css: %w", err)
+		if err := kind.DocumentOptions(buf, src, opts); err != nil {
+			return fmt.Errorf("write html document: %w", err)
 		}
-		buf.WriteString("</style>\n")
+		return nil
 	}
 	if err := kind.HTMLOptions(buf, src, opts); err != nil {
 		return fmt.Errorf("write html: %w", err)

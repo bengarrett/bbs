@@ -94,12 +94,18 @@ func stripSync(_ js.Value, args []js.Value) any {
 	return runSync(args, convertStripValue)
 }
 
-func cssSync(_ js.Value, _ []js.Value) any {
-	var buf bytes.Buffer
-	if err := bbs.PCBoard.CSS(&buf); err != nil {
+func cssSync(_ js.Value, args []js.Value) any {
+	kind := bbs.PCBoard
+	if len(args) > 0 && args[0].Type() == js.TypeString {
+		if parsed, auto, err := parseBBSKind(args[0].String()); err == nil && !auto {
+			kind = parsed
+		}
+	}
+	css, err := kind.StandaloneCSS()
+	if err != nil {
 		panic(js.Global().Get("Error").New(err.Error()))
 	}
-	return buf.String()
+	return css
 }
 
 func detect(_ js.Value, args []js.Value) any {
@@ -216,14 +222,12 @@ func convertHTMLValue(input []byte, opts options) (js.Value, error) {
 	}
 
 	var buf bytes.Buffer
+	bbsOpts := bbs.Options{Unlock: opts.unlock}
 	if opts.css {
-		buf.WriteString("<style>\n")
-		if err := kind.CSS(&buf); err != nil {
-			return js.Undefined(), fmt.Errorf("write css: %w", err)
+		if err := kind.DocumentOptions(&buf, src, bbsOpts); err != nil {
+			return js.Undefined(), fmt.Errorf("convert to html document: %w", err)
 		}
-		buf.WriteString("</style>\n")
-	}
-	if err := kind.HTMLOptions(&buf, src, bbs.Options{Unlock: opts.unlock}); err != nil {
+	} else if err := kind.HTMLOptions(&buf, src, bbsOpts); err != nil {
 		return js.Undefined(), fmt.Errorf("convert to html: %w", err)
 	}
 	return js.ValueOf(buf.String()), nil
@@ -354,13 +358,13 @@ func parseBBSKind(raw string) (bbs.BBS, bool, error) {
 		return bbs.Renegade, false, nil
 	case "celerity":
 		return bbs.Celerity, false, nil
-	case "wildcat":
+	case "wildcat", "wildcat!":
 		return bbs.Wildcat, false, nil
 	case "telegard":
 		return bbs.Telegard, false, nil
-	case "wwivhash", "wwiv#":
+	case "wwivhash", "wwiv#", "wwiv #":
 		return bbs.WWIVHash, false, nil
-	case "wwivheart":
+	case "wwivheart", "wwiv ♥":
 		return bbs.WWIVHeart, false, nil
 	default:
 		return -1, false, fmt.Errorf("%w: %q", errUnknownBBS, raw)
