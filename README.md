@@ -3,8 +3,9 @@
 
 # Package bbs
 
-Package bbs is a [Go module](https://go.dev/) that interacts with legacy textfiles encoded with
-[Bulletin Board Systems](<>) (BBS) color codes to reconstruct them into HTML documents.
+Package bbs is a [Go module](https://go.dev/), terminal utility, and WebAssembly package that detects and converts legacy [Bulletin Board System](https://en.wikipedia.org/wiki/Bulletin_board_system) (BBS) color-coded textfiles into ANSI escape sequences, HTML documents, PNG images, or stripped plain text.
+
+[Check out the live web app.](https://bengarrett.github.io/bbs/)
 
 BBSes were popular in the 1980s and 1990s and allowed computer users to chat,
 message, and share files over the landline telephone network. The commercialization
@@ -16,42 +17,66 @@ standard comes from mainframe equipment. Home microcomputers often had difficult
 interpreting it. So, BBS developers created their own, more straightforward methods
 to colorize and theme the text output to solve this.
 
-*Please note that many microcomputer, PC and MS-DOS based boards used ANSI control codes for colorizations that this library does not support.
+*Please note that many microcomputer, PC and MS-DOS based boards used ANSI control codes for colorizations that this library does not convert.
 
-## Quick usage
+## Terminal utility
 
-[Go Package with docs and examples.](https://pkg.go.dev/github.com/bengarrett/bbs)
+[Download the latest release](https://github.com/bengarrett/bbs/releases/latest)
+
+```bash
+# Convert to ANSI
+bbs display.pcb output.ans
+
+# Convert to a HTML file with embedded VGA font & CSS
+bbs -f html -css display.pcb display.html
+
+# Render as a PNG image
+bbs -f png display.pcb
+
+# Strip BBS color codes to plain text
+bbs -f strip display.pcb
+
+# Detect the BBS color format
+bbs -check display.pcb
+
+# Disable 80-column wrapping
+bbs -unlock display.pcb
+```
+
+## Go package quick usage
+
+[Go Package documentation and examples.](https://pkg.go.dev/github.com/bengarrett/bbs)
 
 ```go
 // open the text file
 file, err := os.Open("pcboard.txt")
 if err != nil {
-    log.Print(err)
-    return
+    log.Fatal(err)
 }
 defer file.Close()
 
-// transform the MS-DOS text to Unicode
-decoder := charmap.CodePage437.NewDecoder()
-reader := transform.NewReader(file, decoder)
-
-// create the HTML equivalent of BBS color codes
-var buf bytes.Buffer
-match, err := bbs.HTML(&buf, reader)
+// render directly to a PNG image
+var pngBuf bytes.Buffer
+kind, err := bbs.PNG(&pngBuf, file)
 if err != nil {
-    log.Print(err)
-    return
+    log.Fatal(err)
 }
+fmt.Println("Detected:", kind.Name())
 
-// fetch CSS
-var css bytes.Buffer
-if err := match.CSS(&css); err != nil {
-    log.Print(err)
-    return
+const hello = "@X1EHello world"
+// convert to ANSI escape sequences
+var ansiBuf bytes.Buffer
+if _, err := bbs.ToANSI(&ansiBuf, strings.NewReader(hello)); err != nil {
+    log.Fatal(err)
 }
+fmt.Println(ansiBuf.String())
 
-// print the partial html and css
-fmt.Fprintln(os.Stdout, css.String(), "\n", buf.String())
+// convert to HTML
+var htmlBuf bytes.Buffer
+if _, err := bbs.HTML(&htmlBuf, strings.NewReader(hello)); err != nil {
+    log.Fatal(err)
+}
+fmt.Println(htmlBuf.String())
 ```
 
 ## Known codes
